@@ -1,0 +1,15 @@
+name: pytorch-refinenet
+channels:
+  - defaults
+dependencies:
+  - cudatoolkit=10.1
+  - pytorch::pytorch
+  - pytorch::torchvision
+  - conda-forge::pydap
+  - conda-forge::tensorboard
+  - conda-forge::tqdm
+  - scikit-learn
+  - pillow
+  - matplotlib
+  - PyYAML
+
