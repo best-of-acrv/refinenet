@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     # try to load model (if any)
     if args.load_directory:
-        model.load(log_directory=args.load_directory, snapshot_num=110000)
+        model.load(log_directory=args.load_directory)
 
     # move model to device (if available)
     if model.cuda_available:

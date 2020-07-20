@@ -8,6 +8,7 @@ dependencies:
   - conda-forge::pydap
   - conda-forge::tensorboard
   - conda-forge::tqdm
+  - cython
   - scikit-learn
   - pillow
   - matplotlib

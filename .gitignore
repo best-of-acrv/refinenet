@@ -1,1 +1,7 @@
 .idea
+runs
+pretrained
+cocoapi
+data
+!data/*.sh
+*.pyc

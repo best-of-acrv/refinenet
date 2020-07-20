@@ -15,10 +15,10 @@ def get_argument_parser():
     parser.add_argument('--upper_scale', type=float, default=1.3, help='upper bound for random scale')
 
     # Model parameters
-    parser.add_argument('--num_resnet_layers', type=int, default=101, help='number of resnet layers in model [50, 101, 152]')
+    parser.add_argument('--num_resnet_layers', type=int, default=50, help='number of resnet layers in model [50, 101, 152]')
 
     # Training parameters
-    parser.add_argument('--gpu', type=int, default=3, help='GPU id to use')
+    parser.add_argument('--gpu', type=int, default=0, help='GPU id to use')
     parser.add_argument('--learning_rate', type=float, default=5e-4, help='base learning rate')
     parser.add_argument('--optimiser_type', type=str, default='sgd', help='optimiser type to use for training')
     parser.add_argument('--display_interval', type=int, default=10, help='interval of displaying log to console')
