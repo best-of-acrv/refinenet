@@ -8,7 +8,8 @@ from PIL import Image
 from pycocotools.coco import COCO
 from pycocotools import mask as cocomask
 from torch.utils.data import Dataset
-from data_utils.coco2voc import coco2voc
+from data_utils.mappings import coco2voc
+from utils.cmap import ColourMap
 
 
 class COCODataset(Dataset):
@@ -43,6 +44,12 @@ class COCODataset(Dataset):
         else:
             ids = list(self.coco.imgs.keys())
             self.img_ids = self.preprocess(ids, self.ids_file)
+
+        # dataset properties
+        self.num_classes = 21
+        self.ignore_index = 255
+        self.label_offset = 0
+        self.cmap = ColourMap(dataset='voc')
 
     def __get_year(self):
         name = self.dataset_name
@@ -97,7 +104,7 @@ class COCODataset(Dataset):
             label = self.target_transform(label)
 
         # convert to label to tensor (without scaling to [0,1])
-        label = np.asarray(label).astype(np.int64)
+        label = np.asarray(label).astype(np.uint8)
         label = torch.from_numpy(label).type(torch.LongTensor)
 
         # create sample of data and label

@@ -11,7 +11,6 @@ class Evaluator(nn.Module):
     def __init__(self, args, multi_scale=False):
         super().__init__()
 
-        self.cmap = ColourMap(N=256)
         self.sample_directory = args.save_directory
         self.multi_scale = multi_scale
 
@@ -47,7 +46,7 @@ class Evaluator(nn.Module):
 
                 # apply colour map
                 prediction += dataset.label_offset
-                prediction = self.cmap.colourise(prediction)
+                prediction = dataset.cmap.colourise(prediction)
 
                 # save prediction image
                 im = Image.fromarray(prediction)

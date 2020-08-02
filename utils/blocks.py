@@ -100,6 +100,27 @@ class ChainedResidualPool(nn.Module):
             x = top + x
         return x
 
+class ChainedResidualPoolLW(nn.Module):
+
+    def __init__(self, in_planes, out_planes, n_stages):
+        super(ChainedResidualPoolLW, self).__init__()
+
+        self.stride = 1
+        self.n_stages = n_stages
+
+        for i in range(n_stages):
+            setattr(self, '{}_{}'.format(i + 1, 'outvar_dimred'),
+                    conv1x1(in_planes if (i == 0) else out_planes, out_planes, stride=self.stride))
+        self.maxpool = nn.MaxPool2d(kernel_size=5, stride=1, padding=2)
+
+    def forward(self, x):
+        top = x
+        for i in range(self.n_stages):
+            top = self.maxpool(top)
+            top = getattr(self, '{}_{}'.format(i + 1, 'outvar_dimred'))(top)
+            x = top + x
+        return x
+
 
 stages_suffixes = {0: '_conv',
                    1: '_conv_relu_varout_dimred'}

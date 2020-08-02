@@ -4,19 +4,10 @@ import torch
 import random
 from PIL import Image
 from torch.utils.data.dataset import Dataset
+from data_utils.read_filelist import read_filelist
+from utils.cmap import ColourMap
 
-# read list of files corresponding to train/val/test split
-def read_filelist(file):
-    file_list = []
-    with open(file, 'r') as f:
-        line = f.readline()
-        while line:
-            file_list.append(line.strip())
-            line = f.readline()
 
-    return file_list
-
-# Custom dataset class for Pascal VOC
 class VOC(Dataset):
     '''Pascal VOC Segmentation dataset.'''
 
@@ -40,6 +31,11 @@ class VOC(Dataset):
         self.transform = transform
         self.target_transform = target_transform
 
+        # dataset properties
+        self.num_classes = 21
+        self.ignore_index = 255
+        self.label_offset = 0
+        self.cmap = ColourMap(dataset='voc')
 
     def __len__(self):
         return len(self.file_list)
@@ -70,7 +66,7 @@ class VOC(Dataset):
             label = self.target_transform(label)
 
         # convert to label to tensor (without scaling to [0,1])
-        label = np.asarray(label).astype(np.int64)
+        label = np.asarray(label).astype(np.uint8)
         label = torch.from_numpy(label).type(torch.LongTensor)
 
         # create sample of data and label
