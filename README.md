@@ -110,7 +110,7 @@ Alternatively, if you wish to load your own pretrained model, you can do this by
 Will load a Light-Weight RefineNet with a ResNet-50 backbone encoder, from the directory ``runs/mymodel``. We also support multi-scale evaluation as specified in the RefineNet paper. To enable multi-scale evaluation simply set
 the flag to ```True``` (e.g.):
 
-```python eval.py --num_resnet_layers=50 --model_type=refinenetlw --multi_scale_eval=True --load_directory=runs/mymodel```
+```python eval.py --dataset=nyu --num_resnet_layers=50 --model_type=refinenetlw --multi_scale_eval=True --load_directory=runs/mymodel```
 
 ## Training ##
 To train your own RefineNet model, run ```train.py```. 
@@ -119,4 +119,4 @@ Use ``--model_type`` to choose between RefineNet and Light-Weight RefineNet. By 
 for the backbone ResNet encoder. For example, to train on the NYUv2 dataset using a RefineNet-101 model, 
 run the following command from the root directory:
 
-```python train_nyu.py --num_resnet_layers=101 --learning_rate=0.0005```
+```python train.py --dataset=nyu --num_resnet_layers=101 --learning_rate=0.0005```
