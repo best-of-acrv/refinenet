@@ -251,18 +251,23 @@ pretrained_urls = {
 def refinenet_lw50(num_classes, pretrained='imagenet', **kwargs):
     model = RefineNetLW(Bottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
+    # load model on device if available
+    map_location = None
+    if not model.cuda_available:
+        map_location = torch.device('cpu')
+
     if pretrained == 'nyu':
         key = 'refinenetlw50_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     elif pretrained == 'voc':
         key = 'refinenetlw50_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     else:
         key = 'resnet50'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     model.name = key
     return model
 
@@ -270,18 +275,23 @@ def refinenet_lw50(num_classes, pretrained='imagenet', **kwargs):
 def refinenet_lw101(num_classes, pretrained='imagenet', **kwargs):
     model = RefineNetLW(Bottleneck, [3, 4, 23, 3], num_classes=num_classes, **kwargs)
 
+    # load model on device if available
+    map_location = None
+    if not model.cuda_available:
+        map_location = torch.device('cpu')
+
     if pretrained == 'nyu':
         key = 'refinenetlw101_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     elif pretrained == 'voc':
         key = 'refinenetlw101_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     else:
         key = 'resnet101'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     model.name = key
     return model
 
@@ -289,18 +299,23 @@ def refinenet_lw101(num_classes, pretrained='imagenet', **kwargs):
 def refinenet_lw152(num_classes, pretrained='imagenet', **kwargs):
     model = RefineNetLW(Bottleneck, [3, 8, 36, 3], num_classes=num_classes, **kwargs)
 
+    # load model on device if available
+    map_location = None
+    if not model.cuda_available:
+        map_location = torch.device('cpu')
+
     if pretrained == 'nyu':
         key = 'refinenetlw152_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     elif pretrained == 'voc':
         key = 'refinenetlw152_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     else:
         key = 'resnet152'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url), strict=False)
+        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
     model.name = key
     return model
 
