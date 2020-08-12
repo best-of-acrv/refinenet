@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
 import numpy as np
-from utils.cmap import ColourMap
 from utils.miou import compute_cm, compute_iu
 
 class Evaluator(nn.Module):

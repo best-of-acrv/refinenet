@@ -13,4 +13,6 @@ dependencies:
   - pillow
   - matplotlib
   - PyYAML
+  - pyzmq
+  - opencv
 

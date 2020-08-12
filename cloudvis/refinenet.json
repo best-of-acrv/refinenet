@@ -1,0 +1,35 @@
+{
+  "id": "refinenet",
+  "public": {
+    "id": "refinenet",
+    "short": "refinenet",
+    "name": "RefineNet",
+    "link": "RefineNet for semantic segmentation. Supports the following classes: [Aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, dining table, dog, horse, motorbike, person, potted plant, sheep, sofa, train, tv monitor]",
+    "description": "Supported of classes for semantic segmentation: <br />Aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, dining table, dog, horse, motorbike, person, potted plant, sheep, sofa, train, tv monitor<br /> Uses the RefineNet model<br>",
+    "inputs": [
+      {
+        "name": "image",
+        "type": "image",
+        "description":"Input Image",
+        "required": true
+      }
+    ],
+    "outputs": [
+     {
+        "name": "out_image",
+        "type": "image",
+        "description": "Output Segmentation Image",
+        "required": false
+      }
+    ],
+    "version": "1.0"
+  },
+  "workers": {
+    "port": 6002,
+    "machine": "suddrey@131.181.33.204",
+    "minimum": 1
+  },
+  "timeout": 5000,
+  "enabled": true,
+  "access": 7
+}

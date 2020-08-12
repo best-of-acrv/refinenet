@@ -38,7 +38,7 @@ def get_dataset(dataset, model_type):
             coco_dataset = COCODataset(root_dir='data/coco', image_set='train',
                                        transform=transform_train, target_transform=target_transform_train)
             train_datasets = [coco_dataset, sbd_dataset, voc_dataset]
-            stage_epochs = [10, 25, 100]
+            stage_epochs = [20, 50, 200]
             stage_gammas = [0.1, 0.1, 0.1]
 
             # Prepare validation dataset
@@ -57,7 +57,7 @@ def get_dataset(dataset, model_type):
             cs_dataset = Citiscapes(root_dir='data/citiscapes', image_set='train',
                                     transform=transform_train, target_transform=target_transform_train)
             train_datasets = [cs_extra_dataset, cs_dataset]
-            stage_epochs = [10, 50]
+            stage_epochs = [20, 100]
             stage_gammas = [0.1, 0.1]
 
             # Prepare validation dataset
@@ -111,7 +111,7 @@ def get_dataset(dataset, model_type):
             cs_dataset = Citiscapes(root_dir='data/citiscapes', image_set='train',
                                     transform=transform_train, target_transform=target_transform_train)
             train_datasets = [cs_extra_dataset, cs_dataset]
-            stage_epochs = [10, 50]
+            stage_epochs = [20, 100]
             stage_gammas = [0.5, 0.5]
 
             # Prepare validation dataset

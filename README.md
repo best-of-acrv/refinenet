@@ -40,7 +40,7 @@ $ python setup.py install
 ```
 
 ## Datasets ##
-This repository supports training and evaluation of ReWe provide scripts to automatically download and set up all required datasets. You can download all datasets using the ```download_datasets.sh``` file. 
+We provide scripts to automatically download and set up all required datasets. You can download all datasets using the ```download_datasets.sh``` file. 
 To download all relevant datasets, run the following:
 ```
 $ cd data

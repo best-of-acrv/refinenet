@@ -263,9 +263,9 @@ pretrained_urls = {
     'refinenet50_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/thgUqW2uRZBeEXG/download',
     'refinenet101_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/9wPfvg6eKqTztNy/download',
     'refinenet152_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/QFcL2qgNsnpSOlr/download',
-    'refinenet50_voc': 'https://cloudstor.aarnet.edu.au/plus/s/BfTPosxVbFydQ8J/download',
-    'refinenet101_voc': 'https://cloudstor.aarnet.edu.au/plus/s/K75Mvp4pjJIuy36/download',
-    'refinenet152_voc': 'https://cloudstor.aarnet.edu.au/plus/s/MScnc6ZMnWQgew8/download',
+    'refinenet50_voc': 'https://cloudstor.aarnet.edu.au/plus/s/YH73jIiBa8iKllX/download',
+    'refinenet101_voc': 'https://cloudstor.aarnet.edu.au/plus/s/rzgoGwTb6CK7nbT/download',
+    'refinenet152_voc': 'https://cloudstor.aarnet.edu.au/plus/s/fSsPeSsNyyHYTwC/download',
 }
 
 # creates a ResNet-50 RefineNet (supports loading of pretrained ImageNet model)
