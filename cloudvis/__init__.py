@@ -4,10 +4,8 @@ import base64
 import numpy
 import zmq
 
-
 class NoDefault:
     pass
-
 
 class Request:
     def __init__(self, data=str()):
@@ -27,11 +25,10 @@ class Request:
 
     def getImage(self, name, default=NoDefault()):
         encoded = self.getValue(name, default)
-        buf = base64.decodestring(encoded)
+        buf = base64.decodestring(encoded.encode())
 
         return cv2.imdecode(numpy.frombuffer(buf, dtype=numpy.uint8),
                             cv2.IMREAD_COLOR)
-
 
 class Response:
     def __init__(self):
@@ -45,11 +42,10 @@ class Response:
 
     def addImage(self, name, image, extension=".jpg"):
         encoded = base64.b64encode(cv2.imencode(extension, image)[1])
-        self.addValue(name, encoded)
+        self.addValue(name, encoded.decode('utf-8'))
 
     def toJSON(self):
         return json.dumps(self.data)
-
 
 class CloudVis:
     def __init__(self, port, host='cloudvis.qut.edu.au'):
@@ -61,11 +57,11 @@ class CloudVis:
         self.socket.close()
 
     def run(self, process, data={}):
-        print('Waiting')
+        print ('Waiting')
 
         while True:
             try:
-                req = Request(self.socket.recv())
+                req = Request(self.socket.recv().decode('utf-8'))
                 resp = Response()
 
                 print('Request received')
@@ -75,7 +71,7 @@ class CloudVis:
                 except Exception as e:
                     resp.addValues({'error': 1, 'message': str(e)})
 
-                self.socket.send(resp.toJSON())
+                self.socket.send(resp.toJSON().encode())
                 print('Replied')
 
             except KeyboardInterrupt:
