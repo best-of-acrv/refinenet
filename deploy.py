@@ -3,15 +3,16 @@ import torch
 from data_utils.get_dataset import get_dataset
 from models.get_model import get_model
 from helpers.arguments import get_argument_parser
-from helpers.evaluator import Evaluator
+from helpers.deployer import Deployer
 
 # get general arguments
 parser = get_argument_parser()
 # add dataset specific arguments
 parser.add_argument('--name', type=str, default='refinenet', help='custom prefix for naming model')
-parser.add_argument('--dataset', type=str, default='voc', help='name of dataset: choose from [nyu, voc]')
+parser.add_argument('--dataset', type=str, default='nyu', help='name of dataset: choose from [nyu, voc]')
 parser.add_argument('--dataroot', type=str, default='../acrv-datasets/datasets/', help='root directory of data')
 parser.add_argument('--model_type', type=str, default='refinenet', help='type of model to use. Choose from: [refinenet, refinenetlw]')
+parser.add_argument('--img_path', type=str, required=True, help='path to single image to evaluate model on')
 parser.add_argument('--multi_scale_eval', type=bool, default=False, help='use multi-scale evaluation')
 parser.add_argument('--save_directory', type=str, default='runs', help='save model directory')
 parser.add_argument('--load_directory', type=str, default=None, help='load directory of model (if any)')
@@ -39,6 +40,5 @@ if __name__ == '__main__':
         model.cuda()
 
     # save samples and compute mean IU
-    evaluator = Evaluator(args, multi_scale=args.multi_scale_eval)
-    evaluator.sample(model, dataset['val'])
-    evaluator.compute_miu(model, dataset['val'])
+    deployer = Deployer(args, multi_scale=args.multi_scale_eval)
+    deployer.run_on_single_image(model, dataset['val'], args.img_path)

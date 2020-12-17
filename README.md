@@ -40,58 +40,20 @@ $ python setup.py install
 ```
 
 ## Datasets ##
-We provide scripts to automatically download and set up all required datasets. You can download all datasets using the ```download_datasets.sh``` file. 
-To download all relevant datasets, run the following:
-```
-$ cd data
-$ sh download_datasets.sh
-```
-
-This will download and setup all the corresponding data directories required for the models. The data directory should
-appear in the following structure:
+For the datasets required for this project, please refer to [this](https://github.com/best-of-acrv/acrv-datasets). Use 
+this to download and prepare NYU, Pascal VOC and COCO datasets. The data directories should appear in the following structure:
 ```
 root_dir
-├── data
-│   ├── citiscapes
-│   ├── coco
-│   ├── nyu
-│   ├── pascal_voc
-│   └── sbd
+|--- deploy.py
+|--- eval.py
+|--- train.py
+acrv-datasets
+|--- datasets
+|------- coco
+|------- nyu
+|------- pascal_voc
+|------- sbd
 ```
-
-To download individual datasets, run their corresponding bash script (i.e. ```download_nyu.sh```)
-
-## Downloading Raw Datasets ##
-If however, you wish to download the raw datasets yourself, you can access them accordingly:
-
-### PASCAL VOC ###
-The Pascal VOC Dataset can be downloaded [here](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)
-
-### Semantic Boundaries ###
-The Semantic Boundaries Dataset can be downloaded [here](http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz)
-
-### MS COCO ###
-The Microsoft COCO Dataset can be downloaded via terminal using the following commands
-```
-$ cd data
-$ mkdir coco && cd coco
-$ curl -O http://images.cocodataset.org/zips/train2017.zip
-$ curl -O http://images.cocodataset.org/zips/val2017.zip
-$ curl -O http://images.cocodataset.org/annotations/annotations_trainval2017.zip
-```
-
-After downloading and unzipping, you will see three folders:
-
-* train2017: training dataset containing 118287 JPEG images
-* val2017: validation dataset containing 5000 JPEG images
-* annotations: contains six json files
-
-### NYUv2 ###
-The NYUv2-40 dataset can be downloaded [here](https://cloudstor.aarnet.edu.au/plus/s/sxDddyNYmyFDEfJ/download)
-
-### Citiscapes ###
-The Citiscapes dataset can be downloaded [here](https://www.cityscapes-dataset.com/). Please note that you will be required
-to register for an account and request access to download this dataset.
 
 ## Evaluation ##
 To evaluate with one of the pretrained models, run ```eval.py```.
@@ -120,3 +82,8 @@ for the backbone ResNet encoder. For example, to train on the NYUv2 dataset usin
 run the following command from the root directory:
 
 ```python train.py --dataset=nyu --num_resnet_layers=101 --learning_rate=0.0005```
+
+## Deploying ##
+For deploying a RefineNet model (sampling a single image for segmenetation), run ```deploy.py```, e.g.:
+
+```python deploy.py --dataset=nyu --num_resnet_layers=101```

@@ -10,7 +10,8 @@ from helpers.trainer import Trainer
 parser = get_argument_parser()
 # add dataset specific arguments
 parser.add_argument('--name', type=str, default='refinenet', help='custom prefix for naming model')
-parser.add_argument('--dataset', type=str, default='voc', help='name of dataset: choose from [nyu, voc, citiscapes]')
+parser.add_argument('--dataset', type=str, default='voc', help='name of dataset: choose from [nyu, voc]')
+parser.add_argument('--dataroot', type=str, default='../acrv-datasets/datasets/', help='root directory of data')
 parser.add_argument('--model_type', type=str, default='refinenet', help='model type: choose from [refinenet, refinenetlw]')
 parser.add_argument('--freeze_bn', type=bool, default=False, help='freeze bn params during training')
 parser.add_argument('--save_directory', type=str, default='runs', help='save model directory')
@@ -27,7 +28,7 @@ torch.manual_seed(args.seed)
 if __name__ == '__main__':
 
     # Get dataset (train and validation) with epoch stages
-    dataset = get_dataset(dataset=args.dataset, model_type=args.model_type)
+    dataset = get_dataset(dataset=args.dataset, data_root=args.dataroot, model_type=args.model_type)
 
     # Get model
     model = get_model(args)
