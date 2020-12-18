@@ -84,6 +84,8 @@ run the following command from the root directory:
 ```python train.py --dataset=nyu --num_resnet_layers=101 --learning_rate=0.0005```
 
 ## Deploying ##
-For deploying a RefineNet model (sampling a single image for segmenetation), run ```deploy.py```, e.g.:
+For deploying a RefineNet model (sampling a single image for segmentation), run ```deploy.py```, e.g.:
 
-```python deploy.py --dataset=nyu --num_resnet_layers=101```
+```python deploy.py --dataset=nyu --num_resnet_layers=101 --img_path=path/to/image```
+
+
