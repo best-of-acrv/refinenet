@@ -18,11 +18,18 @@ RefineNet and Light-Weight RefineNet models as specified in their respective pap
 the official [RefineNet](https://github.com/guosheng/refinenet) and [Light-Weight RefineNet](https://github.com/DrSleep/light-weight-refinenet).
 
 ## Setup ##
-To create the Conda environment to run code from this repository:
-
+Conda needs to be updated to the latest stable version: 
 ```
+$ conda update conda
+$ conda update --all
+```
+
+From the root directory of this repository, to create the Conda environment to run code from this repository:
+```
+$ conda config --set channel_priority strict
 $ conda env create -f requirements.yml
 ```
+
 This should set up the conda environment with all prerequisites for running this code. Activate this Conda
 environment using the following command:
 ```
@@ -40,8 +47,9 @@ $ python setup.py install
 ```
 
 ## Datasets ##
-For the datasets required for this project, please refer to [this](https://github.com/best-of-acrv/acrv-datasets). Use 
-this to download and prepare NYU, Pascal VOC and COCO datasets. The data directories should appear in the following structure:
+For the datasets required for this project, please refer to the [Best-Of-ACRV repository](https://github.com/best-of-acrv/acrv-datasets). 
+Use this repository to download and prepare the NYU, VOC and COCO datasets required for this project. 
+The data directories should appear in the following structure:
 ```
 root_dir
 |--- deploy.py
