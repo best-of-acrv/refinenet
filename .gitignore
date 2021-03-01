@@ -5,3 +5,4 @@ cocoapi
 data
 !data/*.sh
 *.pyc
+*.sw*
