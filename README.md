@@ -59,7 +59,11 @@ u@pc:~$ pip install -e .
 
 Editable mode allows you to immediately use any changes you make to RefineNet's code in your local Python ecosystem.
 
+TODO: add instructions for from source method that doesn't use pip (i.e. just running scripts)
+
 ## Using RefineNet
+
+TODO: add details for quickstart scripts that don't require you to write your own Python scripts
 
 Once installed, RefineNet can be used like any other Python package. It consists of a `RefineNet` class with three main functions for training, evaluation, and deployment. Below are some examples to help get you started with RefineNet:
 
