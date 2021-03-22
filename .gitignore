@@ -6,3 +6,4 @@ data
 !data/*.sh
 *.pyc
 *.sw*
+*.egg-info/

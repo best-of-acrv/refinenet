@@ -67,6 +67,10 @@ TODO: add details for quickstart scripts that don't require you to write your ow
 
 Once installed, RefineNet can be used like any other Python package. It consists of a `RefineNet` class with three main functions for training, evaluation, and deployment. Below are some examples to help get you started with RefineNet:
 
+## RefineNet API
+
+TODO give this context
+
 ```python
 from refinenet import RefineNet
 
@@ -74,27 +78,23 @@ from refinenet import RefineNet
 r = RefineNet()
 
 # Initialise a lightweight RefineNet network with a pre-trained model
-r = RefineNet(model_type='lightweight', model='/path/to/my_model')
+r = RefineNet(model='lightweight', weights='/path/to/my_model')
 
 # Initialise a lightweight RefineNet network with 50 layers
-r = RefineNet(model_type='lightweight', num_layers=50)
+r = RefineNet(model='lightweight', num_layers=50)
 
 # Train a new model on the NYU dataset with a custom learning rate
 r.train(dataset='nyu', learning_rate=0.0005)
 
 # Get a segmentation image from a TODO opencv image
-segmentation_image = r.deploy(image=my_image)
+segmentation_image = r.predict(image=my_image)
 
 # Save a segmentation image to file, using an image from another image file
-r.deploy(image_file='/my/image.jpg', output_file='/my/segmentation/image.jpg')
+r.predict(image_file='/my/image.jpg', output_file='/my/segmentation/image.jpg')
 
 # Evaluate your model's performance on the coco dataset, & save the results
 r.eval(dataset='coco', output_file='/my/results.json')
 ```
-
-## RefineNet API
-
-TODO Do we do this? Inline documentation in the source file? Or Sphinx type stuff?
 
 ## Citing our work
 
