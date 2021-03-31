@@ -85,7 +85,7 @@ class RefineNet(object):
 
         # Initialise the network
         os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_num)
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_id)
         torch.manual_seed(self.model_seed)
 
         if not torch.cuda.is_available():

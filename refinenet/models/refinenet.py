@@ -2,11 +2,10 @@ import os
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
-from helpers.download_helper import download_model
-from helpers.model_helper import find_snapshot
-from utils.miou import compute_cm, compute_iu
 
 from .blocks import *
+from .helpers import download_model, find_snapshot
+from ..helpers import compute_cm, compute_iu
 
 
 class RefineNet(nn.Module):
