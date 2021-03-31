@@ -6,7 +6,8 @@ from PIL import Image
 import numpy as np
 from data_utils.transforms import get_transforms
 
-class Deployer(nn.Module):
+
+class Predictor(nn.Module):
     def __init__(self, args, multi_scale=False):
         super().__init__()
 
@@ -16,7 +17,8 @@ class Deployer(nn.Module):
     # sample images using specified snapshot model
     def run_on_single_image(self, model, dataset, img_path):
         # output directory
-        output_directory = os.path.join(self.sample_directory, 'output', model.name)
+        output_directory = os.path.join(self.sample_directory, 'output',
+                                        model.name)
         os.makedirs(output_directory, exist_ok=True)
 
         # sample images and generate prediction images
@@ -54,7 +56,8 @@ class Deployer(nn.Module):
 
             # save prediction image
             im = Image.fromarray(prediction)
-            output_file = os.path.join(output_directory, os.path.basename(img_path))
+            output_file = os.path.join(output_directory,
+                                       os.path.basename(img_path))
             im.save(output_file)
 
     def eval_single_scale(self, model, img):
@@ -64,7 +67,8 @@ class Deployer(nn.Module):
 
         # interpolate logits back to original image size
         prediction = F.softmax(logits, dim=1)
-        prediction = F.interpolate(prediction, (img.shape[-2], img.shape[-1]), mode='bilinear')
+        prediction = F.interpolate(prediction, (img.shape[-2], img.shape[-1]),
+                                   mode='bilinear')
         prediction = torch.argmax(prediction, dim=1)
         prediction = torch.squeeze(prediction)
 
@@ -84,18 +88,20 @@ class Deployer(nn.Module):
         for scale in scales:
 
             # compute scaled height and width
-            scaled_height = int(scale*height)
-            scaled_width = int(scale*width)
+            scaled_height = int(scale * height)
+            scaled_width = int(scale * width)
 
             # interpolate image to scale
-            scaled_img = F.interpolate(img, (scaled_height, scaled_width), mode='bilinear')
+            scaled_img = F.interpolate(img, (scaled_height, scaled_width),
+                                       mode='bilinear')
 
             # forward pass through
             logits = model(scaled_img)
 
             # interpolate logits back to original image size
             prediction = F.softmax(logits, dim=1)
-            prediction = F.interpolate(prediction, (height, width), mode='bilinear')
+            prediction = F.interpolate(prediction, (height, width),
+                                       mode='bilinear')
             predictions.append(prediction)
 
         prediction = torch.cat(predictions, dim=0)
