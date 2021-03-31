@@ -1,9 +1,16 @@
+import pkg_resources
 import numpy as np
 import torch
+
+_CACHE_LOCATION = '.cache'
 
 
 def bitget(byteval, idx):
     return ((byteval & (1 << idx)) != 0)
+
+
+def cache_location():
+    return pkg_resources.resource_filename(__name__, _CACHE_LOCATION)
 
 
 def compute_cm(gt, pred, N, with_cuda=False):

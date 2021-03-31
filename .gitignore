@@ -1,6 +1,6 @@
 .idea
 runs
-pretrained
+.cache
 cocoapi
 data
 !data/*.sh

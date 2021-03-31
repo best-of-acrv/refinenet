@@ -100,9 +100,11 @@ class RefineNet(object):
     def train(self, dataset, learning_rate=None):
         # Obtain access to the dataset
         dataset = dataset.lower()
+        print("\nGETTING DATASETS:")
         dataset_dir = acrv_datasets.get_datasets(dataset)
 
         # Load in a starting model, and moving it to the device if required
+        print("\nGETTING REQUESTED MODELS")
         model = _get_model(dataset, self.model, self.num_resnet_layers)
 
         # Start a model trainer
