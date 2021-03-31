@@ -4,6 +4,7 @@ import re
 import torch
 
 from .models import refinenet, refinenet_lw
+from .trainer import Trainer
 
 # Param list from old mode:
 # SHARED MODE:
@@ -102,7 +103,7 @@ class RefineNet(object):
     def predict(self, image=None, image_file=None, output_file=None):
         pass
 
-    def train(self, dataset, learning_rate=None, optimiser_type=None):
+    def train(self, dataset, learning_rate=5e-4, optimiser_type=None):
         # Perform argument validation / set defaults
         optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
                                        RefineNet.OPTIMISER_TYPES)
@@ -114,10 +115,15 @@ class RefineNet(object):
 
         # Load in a starting model, and moving it to the device if required
         print("\nGETTING REQUESTED MODELS")
-        model = _get_model(dataset, self.model_type, self.num_resnet_layers)
-        model = _get_optimiser()
+        model = _get_optimiser(
+            _get_model(dataset, self.model_type, self.num_resnet_layers),
+            self.model_type, optimiser_type, learning_rate)
+        # TODO loading of previously saved model
+        if model.cuda_available():
+            model.cuda()
 
         # Start a model trainer
+        Trainer().train(model, dataset_dir)
 
 
 def _get_model(dataset, model_type, num_resnet_layers, pretrained='imagenet'):
@@ -164,6 +170,7 @@ def _get_optimiser(model, model_type, optimiser_type, learning_rate):
             learning_rate),
         params=dec_params,
         **opt_params)
+    return model
 
 
 def _sanitise_arg(value, name, supported_list):

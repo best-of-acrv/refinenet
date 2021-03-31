@@ -4,9 +4,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
 
 class Trainer(nn.Module):
     def __init__(self, args):
@@ -29,7 +31,10 @@ class Trainer(nn.Module):
 
         # dataset for validating
         if dataset['val']:
-            val_dataloader = DataLoader(dataset['val'], batch_size=1, shuffle=False, num_workers=1)
+            val_dataloader = DataLoader(dataset['val'],
+                                        batch_size=1,
+                                        shuffle=False,
+                                        num_workers=1)
 
         # make save directory
         os.makedirs(self.save_directory, exist_ok=True)
@@ -40,11 +45,20 @@ class Trainer(nn.Module):
         for i, d in enumerate(dataset['train']):
 
             # create schedulers for encoder and decoder optimisers
-            enc_scheduler = torch.optim.lr_scheduler.StepLR(model.enc_optimiser, step_size=dataset['stage_epochs'][i], gamma=dataset['stage_gammas'][i])
-            dec_scheduler = torch.optim.lr_scheduler.StepLR(model.dec_optimiser, step_size=dataset['stage_epochs'][i], gamma=dataset['stage_gammas'][i])
+            enc_scheduler = torch.optim.lr_scheduler.StepLR(
+                model.enc_optimiser,
+                step_size=dataset['stage_epochs'][i],
+                gamma=dataset['stage_gammas'][i])
+            dec_scheduler = torch.optim.lr_scheduler.StepLR(
+                model.dec_optimiser,
+                step_size=dataset['stage_epochs'][i],
+                gamma=dataset['stage_gammas'][i])
 
             # setup dataloader
-            dataloader = DataLoader(d, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+            dataloader = DataLoader(d,
+                                    batch_size=args.batch_size,
+                                    shuffle=True,
+                                    num_workers=args.num_workers)
 
             # define loss criterion
             criterion = nn.NLLLoss(ignore_index=d.ignore_index)
@@ -69,11 +83,11 @@ class Trainer(nn.Module):
                     # display current training loss
                     if (curr_iteration + 1) % self.display_interval == 0:
                         stop = timeit.default_timer()
-                        print('[Epoch: {}] [Iter: {}] [Time: {:3f}] [Lr: {}] [loss: {:4f}]'.format(curr_epoch,
-                                                                                                curr_iteration + 1,
-                                                                                                stop-start,
-                                                                                                get_lr(model.enc_optimiser),
-                                                                                                mean_loss.item()))
+                        print(
+                            '[Epoch: {}] [Iter: {}] [Time: {:3f}] [Lr: {}] [loss: {:4f}]'
+                            .format(curr_epoch, curr_iteration + 1,
+                                    stop - start, get_lr(model.enc_optimiser),
+                                    mean_loss.item()))
                         start = stop
                     curr_iteration += 1
 
@@ -83,9 +97,15 @@ class Trainer(nn.Module):
                     # set model to eval first
                     model.eval()
                     mean_iu = model.validate(dataset['val'])
-                    print('[Epoch: {}] [Iter: {}] [mean IU: {:4f}]'.format(curr_epoch, curr_iteration + 1, mean_iu))
-                    with open(os.path.join(self.save_directory, 'mean_iu.txt'), 'a') as f:
-                        f.writelines(['Epoch: ', str(curr_epoch + 1), ' ', 'Mean IU: ', str(mean_iu), '\n'])
+                    print('[Epoch: {}] [Iter: {}] [mean IU: {:4f}]'.format(
+                        curr_epoch, curr_iteration + 1, mean_iu))
+                    with open(os.path.join(self.save_directory, 'mean_iu.txt'),
+                              'a') as f:
+                        f.writelines([
+                            'Epoch: ',
+                            str(curr_epoch + 1), ' ', 'Mean IU: ',
+                            str(mean_iu), '\n'
+                        ])
 
                     # model back to train mode
                     model.train()
