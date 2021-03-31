@@ -1,5 +1,6 @@
 import acrv_datasets
 import os
+import re
 import torch
 
 from .models import refinenet, refinenet_lw
@@ -54,32 +55,36 @@ from .models import refinenet, refinenet_lw
 
 
 class RefineNet(object):
-    MODELS = ['full', 'lightweight']
+    MODEL_TYPES = ['full', 'lightweight']
     NUM_LAYERS = [50, 101, 152]
+    OPTIMISER_TYPES = ['adam', 'sgd']
     WEIGHTS = ['nyu', 'voc', 'citiscapes']
 
     def __init__(self,
                  gpu_id=0,
-                 model=MODELS[0],
+                 model_type=MODEL_TYPES[0],
                  model_seed=0,
                  num_resnet_layers=NUM_LAYERS[0],
                  weights=None,
                  weights_file=None):
         # Validate arguments
-        if model.lower() not in RefineNet.MODELS:
+        if model_type.lower() not in RefineNet.MODEL_TYPES:
             raise ValueError(
-                "Invalid 'model' provided. Supported values are one of:"
-                "\n\t%s" % RefineNet.MODELS)
+                "Invalid 'model_type' provided. Supported values are one of:"
+                "\n\t%s" % RefineNet.MODEL_TYPES)
         if num_resnet_layers not in RefineNet.NUM_LAYERS:
             raise ValueError(
                 "Invalid 'num_resnet_layers' provided. Supported values are:"
                 "\n\t%s" % RefineNet.NUM_LAYERS)
 
-        # Apply arguments
+        # Apply sanitised arguments
         self.gpu_id = gpu_id
-        self.model = model.lower()
+        self.model_type = _sanitise_arg(model_type, 'model_type',
+                                        RefineNet.MODEL_TYPES)
         self.model_seed = model_seed
-        self.num_resnet_layers = num_resnet_layers
+        self.num_resnet_layers = _sanitise_arg(num_resnet_layers,
+                                               'num_resnet_layers',
+                                               RefineNet.NUM_LAYERS)
         self.weights = weights
         self.weights_file = weights_file
 
@@ -97,7 +102,11 @@ class RefineNet(object):
     def predict(self, image=None, image_file=None, output_file=None):
         pass
 
-    def train(self, dataset, learning_rate=None):
+    def train(self, dataset, learning_rate=None, optimiser_type=None):
+        # Perform argument validation / set defaults
+        optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
+                                       RefineNet.OPTIMISER_TYPES)
+
         # Obtain access to the dataset
         dataset = dataset.lower()
         print("\nGETTING DATASETS:")
@@ -105,22 +114,61 @@ class RefineNet(object):
 
         # Load in a starting model, and moving it to the device if required
         print("\nGETTING REQUESTED MODELS")
-        model = _get_model(dataset, self.model, self.num_resnet_layers)
+        model = _get_model(dataset, self.model_type, self.num_resnet_layers)
+        model = _get_optimiser()
 
         # Start a model trainer
 
 
-def _get_model(dataset, model, num_resnet_layers, pretrained='imagenet'):
+def _get_model(dataset, model_type, num_resnet_layers, pretrained='imagenet'):
     num_classes = {'nyu': 40, 'voc': 21, 'citiscapes': 19}[dataset]
     return {
-        RefineNet.MODELS[0]: {
+        RefineNet.MODEL_TYPES[0]: {
             50: refinenet.refinenet50,
             101: refinenet.refinenet101,
             152: refinenet.refinenet152
         },
-        RefineNet.MODELS[1]: {
+        RefineNet.MODEL_TYPES[1]: {
             50: refinenet_lw.refinenet_lw50,
             101: refinenet_lw.refinenet_lw101,
             152: refinenet_lw.refinenet_lw152
         }
-    }[model][num_resnet_layers](num_classes=num_classes, pretrained=pretrained)
+    }[model_type][num_resnet_layers](num_classes=num_classes,
+                                     pretrained=pretrained)
+
+
+def _get_optimiser(model, model_type, optimiser_type, learning_rate):
+    # Get encoder and decoder parameters from the model
+    enc_params = []
+    dec_params = []
+    for k, v in model.named_parameters():
+        if bool(re.match(".*conv1.*|.*bn1.*|.*layer.*", k)):
+            enc_params.append(v)
+        else:
+            dec_params.append(v)
+
+    # Attach the optimisers based on model_type & optimiser_type
+    opt_fn = (torch.optim.SGD if optimiser_type == RefineNet.OPTIMISER_TYPES[1]
+              else torch.optim.Adam)
+    opt_params = ({
+        'momentum':
+        0.9,
+        'weight_decay':
+        5e-4 if model_type == RefineNet.MODEL_TYPES[0] else 1e-5
+    } if optimiser_type == RefineNet.OPTIMISER_TYPES[1] else {})
+    model.enc_optimiser = opt_fn(lr=learning_rate,
+                                 params=enc_params,
+                                 **opt_params)
+    model.dec_optimiser = opt_fn(
+        lr=(learning_rate if model_type == RefineNet.MODEL_TYPES[0] else 10 *
+            learning_rate),
+        params=dec_params,
+        **opt_params)
+
+
+def _sanitise_arg(value, name, supported_list):
+    ret = value.lower() if type(value) is str else value
+    if ret not in supported_list:
+        raise ValueError("Invalid '%s' provided. Supported values are one of:"
+                         "\n\t%s" % (name, supported_list))
+    return ret
