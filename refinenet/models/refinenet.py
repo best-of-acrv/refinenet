@@ -2,13 +2,14 @@ import os
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
-from utils.blocks import *
 from helpers.download_helper import download_model
 from helpers.model_helper import find_snapshot
 from utils.miou import compute_cm, compute_iu
 
-class RefineNet(nn.Module):
+from .blocks import *
 
+
+class RefineNet(nn.Module):
     def __init__(self, block, layers, num_classes=21):
         super(RefineNet, self).__init__()
 
@@ -21,7 +22,11 @@ class RefineNet(nn.Module):
 
         # resnet backbone
         self.do = nn.Dropout(p=0.5)
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3,
+                               64,
+                               kernel_size=7,
+                               stride=2,
+                               padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -37,33 +42,49 @@ class RefineNet(nn.Module):
         self.adapt_stage1_b = self._make_rcu(512, 512, 2, 2)
         self.mflow_conv_g1_pool = self._make_crp(512, 512, 4)
         self.mflow_conv_g1_b = self._make_rcu(512, 512, 3, 2)
-        self.mflow_conv_g1_b3_joint_varout_dimred = conv3x3(512, 256, bias=False)
+        self.mflow_conv_g1_b3_joint_varout_dimred = conv3x3(512,
+                                                            256,
+                                                            bias=False)
 
         # RefineNet Block 2
         self.p_ims1d2_outl2_dimred = conv3x3(1024, 256, bias=False)
         self.adapt_stage2_b = self._make_rcu(256, 256, 2, 2)
-        self.adapt_stage2_b2_joint_varout_dimred = conv3x3(256, 256, bias=False)
+        self.adapt_stage2_b2_joint_varout_dimred = conv3x3(256,
+                                                           256,
+                                                           bias=False)
         self.mflow_conv_g2_pool = self._make_crp(256, 256, 4)
         self.mflow_conv_g2_b = self._make_rcu(256, 256, 3, 2)
-        self.mflow_conv_g2_b3_joint_varout_dimred = conv3x3(256, 256, bias=False)
+        self.mflow_conv_g2_b3_joint_varout_dimred = conv3x3(256,
+                                                            256,
+                                                            bias=False)
 
         # RefineNet Block 3
         self.p_ims1d2_outl3_dimred = conv3x3(512, 256, bias=False)
         self.adapt_stage3_b = self._make_rcu(256, 256, 2, 2)
-        self.adapt_stage3_b2_joint_varout_dimred = conv3x3(256, 256, bias=False)
+        self.adapt_stage3_b2_joint_varout_dimred = conv3x3(256,
+                                                           256,
+                                                           bias=False)
         self.mflow_conv_g3_pool = self._make_crp(256, 256, 4)
         self.mflow_conv_g3_b = self._make_rcu(256, 256, 3, 2)
-        self.mflow_conv_g3_b3_joint_varout_dimred = conv3x3(256, 256, bias=False)
+        self.mflow_conv_g3_b3_joint_varout_dimred = conv3x3(256,
+                                                            256,
+                                                            bias=False)
 
         # RefineNet Block 4
         self.p_ims1d2_outl4_dimred = conv3x3(256, 256, bias=False)
         self.adapt_stage4_b = self._make_rcu(256, 256, 2, 2)
-        self.adapt_stage4_b2_joint_varout_dimred = conv3x3(256, 256, bias=False)
+        self.adapt_stage4_b2_joint_varout_dimred = conv3x3(256,
+                                                           256,
+                                                           bias=False)
         self.mflow_conv_g4_pool = self._make_crp(256, 256, 4)
         self.mflow_conv_g4_b = self._make_rcu(256, 256, 3, 2)
 
-        self.clf_conv = nn.Conv2d(256, num_classes, kernel_size=3, stride=1,
-                                  padding=1, bias=True)
+        self.clf_conv = nn.Conv2d(256,
+                                  num_classes,
+                                  kernel_size=3,
+                                  stride=1,
+                                  padding=1,
+                                  bias=True)
 
     def _make_crp(self, in_planes, out_planes, stages):
         layers = [ChainedResidualPool(in_planes, out_planes, stages)]
@@ -77,8 +98,11 @@ class RefineNet(nn.Module):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(self.inplanes,
+                          planes * block.expansion,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
@@ -111,7 +135,9 @@ class RefineNet(nn.Module):
         x4 = self.mflow_conv_g1_pool(x4)
         x4 = self.mflow_conv_g1_b(x4)
         x4 = self.mflow_conv_g1_b3_joint_varout_dimred(x4)
-        x4 = nn.Upsample(size=l3.size()[2:], mode='bilinear', align_corners=True)(x4)
+        x4 = nn.Upsample(size=l3.size()[2:],
+                         mode='bilinear',
+                         align_corners=True)(x4)
 
         x3 = self.p_ims1d2_outl2_dimred(l3)
         x3 = self.adapt_stage2_b(x3)
@@ -121,7 +147,9 @@ class RefineNet(nn.Module):
         x3 = self.mflow_conv_g2_pool(x3)
         x3 = self.mflow_conv_g2_b(x3)
         x3 = self.mflow_conv_g2_b3_joint_varout_dimred(x3)
-        x3 = nn.Upsample(size=l2.size()[2:], mode='bilinear', align_corners=True)(x3)
+        x3 = nn.Upsample(size=l2.size()[2:],
+                         mode='bilinear',
+                         align_corners=True)(x3)
 
         x2 = self.p_ims1d2_outl3_dimred(l2)
         x2 = self.adapt_stage3_b(x2)
@@ -131,7 +159,9 @@ class RefineNet(nn.Module):
         x2 = self.mflow_conv_g3_pool(x2)
         x2 = self.mflow_conv_g3_b(x2)
         x2 = self.mflow_conv_g3_b3_joint_varout_dimred(x2)
-        x2 = nn.Upsample(size=l1.size()[2:], mode='bilinear', align_corners=True)(x2)
+        x2 = nn.Upsample(size=l1.size()[2:],
+                         mode='bilinear',
+                         align_corners=True)(x2)
 
         x1 = self.p_ims1d2_outl4_dimred(l1)
         x1 = self.adapt_stage4_b(x1)
@@ -154,7 +184,9 @@ class RefineNet(nn.Module):
         output = F.softmax(output, dim=1)
 
         # interpolate output to match label data size
-        output = F.interpolate(output, (labels.shape[-2], labels.shape[-1]), mode='bilinear', align_corners=True)
+        output = F.interpolate(output, (labels.shape[-2], labels.shape[-1]),
+                               mode='bilinear',
+                               align_corners=True)
 
         # apply log
         output = torch.log(output)
@@ -177,10 +209,14 @@ class RefineNet(nn.Module):
         return loss
 
     def validate(self, dataset):
-        dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
+        dataloader = DataLoader(dataset,
+                                batch_size=1,
+                                shuffle=False,
+                                num_workers=1)
 
         # full confusion matrix
-        full_cm = torch.zeros((dataset.num_classes, dataset.num_classes), dtype=torch.int64)
+        full_cm = torch.zeros((dataset.num_classes, dataset.num_classes),
+                              dtype=torch.int64)
         if self.cuda_available:
             full_cm = full_cm.cuda()
 
@@ -198,12 +234,15 @@ class RefineNet(nn.Module):
 
                 # interpolate logits back to original image size
                 prediction = F.softmax(logits, dim=1)
-                prediction = F.interpolate(prediction, (data.shape[-2], data.shape[-1]), mode='bilinear')
+                prediction = F.interpolate(prediction,
+                                           (data.shape[-2], data.shape[-1]),
+                                           mode='bilinear')
                 prediction = torch.argmax(prediction, dim=1)
                 prediction = torch.squeeze(prediction)
 
                 # compute confusion matrix
-                cm = compute_cm(labels, prediction, dataset.num_classes, self.cuda_available)
+                cm = compute_cm(labels, prediction, dataset.num_classes,
+                                self.cuda_available)
                 full_cm += cm
 
             # compute mean IU from confusion matrix
@@ -212,8 +251,6 @@ class RefineNet(nn.Module):
             mean_iu = np.mean(iu)
 
         return mean_iu
-
-
 
     def save(self, global_iteration, log_directory):
         os.makedirs(os.path.join(log_directory, 'snapshots'), exist_ok=True)
@@ -224,7 +261,9 @@ class RefineNet(nn.Module):
             'global_iteration': global_iteration
         }
 
-        model_path = os.path.join(log_directory, 'snapshots', 'model-{:06d}.pth.tar'.format(global_iteration))
+        model_path = os.path.join(
+            log_directory, 'snapshots',
+            'model-{:06d}.pth.tar'.format(global_iteration))
         print('Creating Snapshot: ' + model_path)
         torch.save(model, model_path)
 
@@ -233,13 +272,16 @@ class RefineNet(nn.Module):
         model_name = find_snapshot(snapshot_dir, snapshot_num)
 
         if model_name is None:
-            print('Model not found: initialising using default PyTorch initialisation!')
+            print(
+                'Model not found: initialising using default PyTorch initialisation!'
+            )
             # uses pytorch default initialisation
             return 0
         # load model if snapshot was found
         else:
             full_model = torch.load(os.path.join(snapshot_dir, model_name))
-            print('Loading model from: ' + os.path.join(snapshot_dir, model_name))
+            print('Loading model from: ' +
+                  os.path.join(snapshot_dir, model_name))
             self.load_state_dict(full_model['model'], strict=False)
             if with_optim:
                 self.enc_optimiser.load_state_dict(full_model['enc_optimiser'])
@@ -253,6 +295,7 @@ class RefineNet(nn.Module):
             curr_iteration = full_model['global_iteration']
             return curr_iteration
 
+
 imagenet_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
     'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
@@ -260,17 +303,26 @@ imagenet_urls = {
 }
 
 pretrained_urls = {
-    'refinenet50_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/thgUqW2uRZBeEXG/download',
-    'refinenet101_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/9wPfvg6eKqTztNy/download',
-    'refinenet152_nyu': 'https://cloudstor.aarnet.edu.au/plus/s/QFcL2qgNsnpSOlr/download',
-    'refinenet50_voc': 'https://cloudstor.aarnet.edu.au/plus/s/YH73jIiBa8iKllX/download',
-    'refinenet101_voc': 'https://cloudstor.aarnet.edu.au/plus/s/rzgoGwTb6CK7nbT/download',
-    'refinenet152_voc': 'https://cloudstor.aarnet.edu.au/plus/s/fSsPeSsNyyHYTwC/download',
+    'refinenet50_nyu':
+    'https://cloudstor.aarnet.edu.au/plus/s/thgUqW2uRZBeEXG/download',
+    'refinenet101_nyu':
+    'https://cloudstor.aarnet.edu.au/plus/s/9wPfvg6eKqTztNy/download',
+    'refinenet152_nyu':
+    'https://cloudstor.aarnet.edu.au/plus/s/QFcL2qgNsnpSOlr/download',
+    'refinenet50_voc':
+    'https://cloudstor.aarnet.edu.au/plus/s/YH73jIiBa8iKllX/download',
+    'refinenet101_voc':
+    'https://cloudstor.aarnet.edu.au/plus/s/rzgoGwTb6CK7nbT/download',
+    'refinenet152_voc':
+    'https://cloudstor.aarnet.edu.au/plus/s/fSsPeSsNyyHYTwC/download',
 }
+
 
 # creates a ResNet-50 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet50(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
+    model = RefineNet(Bottleneck, [3, 4, 6, 3],
+                      num_classes=num_classes,
+                      **kwargs)
 
     # load model on device if available
     map_location = None
@@ -280,21 +332,31 @@ def refinenet50(num_classes, pretrained='imagenet', **kwargs):
     if pretrained == 'nyu':
         key = 'refinenet50_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     elif pretrained == 'voc':
         key = 'refinenet50_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     else:
         key = 'resnet50'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
+        model.load_state_dict(download_model(key,
+                                             url,
+                                             map_location=map_location),
+                              strict=False)
     model.name = key
     return model
 
+
 # creates a ResNet-101 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet101(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes, **kwargs)
+    model = RefineNet(Bottleneck, [3, 4, 23, 3],
+                      num_classes=num_classes,
+                      **kwargs)
 
     # load model on device if available
     map_location = None
@@ -304,21 +366,31 @@ def refinenet101(num_classes, pretrained='imagenet', **kwargs):
     if pretrained == 'nyu':
         key = 'refinenet101_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     elif pretrained == 'voc':
         key = 'refinenet101_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     else:
         key = 'resnet101'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
+        model.load_state_dict(download_model(key,
+                                             url,
+                                             map_location=map_location),
+                              strict=False)
     model.name = key
     return model
 
+
 # creates a ResNet-152 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet152(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 8, 36, 3], num_classes=num_classes, **kwargs)
+    model = RefineNet(Bottleneck, [3, 8, 36, 3],
+                      num_classes=num_classes,
+                      **kwargs)
 
     # load model on device if available
     map_location = None
@@ -328,15 +400,21 @@ def refinenet152(num_classes, pretrained='imagenet', **kwargs):
     if pretrained == 'nyu':
         key = 'refinenet152_nyu'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     elif pretrained == 'voc':
         key = 'refinenet152_voc'
         url = pretrained_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location)['model'], strict=False)
+        model.load_state_dict(download_model(
+            key, url, map_location=map_location)['model'],
+                              strict=False)
     else:
         key = 'resnet152'
         url = imagenet_urls[key]
-        model.load_state_dict(download_model(key, url, map_location=map_location), strict=False)
+        model.load_state_dict(download_model(key,
+                                             url,
+                                             map_location=map_location),
+                              strict=False)
     model.name = key
     return model
-

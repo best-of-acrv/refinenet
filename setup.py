@@ -11,7 +11,7 @@ setup(name='refinenet',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=find_packages(),
-      install_requires=[],
+      install_requires=['acrv_datasets'],
       classifiers=(
           "Programming Language :: Python :: 3",
           "License :: OSI Approved :: BSD License",
