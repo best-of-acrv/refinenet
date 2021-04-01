@@ -56,6 +56,7 @@ from .trainer import Trainer
 
 
 class RefineNet(object):
+    DATASETS = ['nyu', 'voc']
     MODEL_TYPES = ['full', 'lightweight']
     NUM_LAYERS = [50, 101, 152]
     OPTIMISER_TYPES = ['adam', 'sgd']
@@ -68,16 +69,6 @@ class RefineNet(object):
                  num_resnet_layers=NUM_LAYERS[0],
                  weights=None,
                  weights_file=None):
-        # Validate arguments
-        if model_type.lower() not in RefineNet.MODEL_TYPES:
-            raise ValueError(
-                "Invalid 'model_type' provided. Supported values are one of:"
-                "\n\t%s" % RefineNet.MODEL_TYPES)
-        if num_resnet_layers not in RefineNet.NUM_LAYERS:
-            raise ValueError(
-                "Invalid 'num_resnet_layers' provided. Supported values are:"
-                "\n\t%s" % RefineNet.NUM_LAYERS)
-
         # Apply sanitised arguments
         self.gpu_id = gpu_id
         self.model_type = _sanitise_arg(model_type, 'model_type',
@@ -104,9 +95,10 @@ class RefineNet(object):
         pass
 
     def train(self,
-              dataset,
+              dataset_name,
               *,
               batch_size=4,
+              dataset_dir=None,
               display_interval=10,
               eval_interval=1,
               freeze_batch_normal=False,
@@ -116,18 +108,21 @@ class RefineNet(object):
               output_directory=None,
               snapshot_interval=5):
         # Perform argument validation / set defaults
+        dataset_name = _sanitise_arg(dataset_name, 'dataset',
+                                     RefineNet.DATASETS)
         optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
                                        RefineNet.OPTIMISER_TYPES)
 
         # Obtain access to the dataset
-        dataset = dataset.lower()
         print("\nGETTING DATASETS:")
-        dataset_dir = acrv_datasets.get_datasets(dataset)
+        if dataset_dir is None:
+            dataset_dir = acrv_datasets.get_datasets(dataset_name)
+        print("Using 'dataset_dir': %s" % dataset_dir)
 
         # Load in a starting model, and moving it to the device if required
         print("\nGETTING REQUESTED MODELS")
         model = _get_optimiser(
-            _get_model(dataset, self.model_type, self.num_resnet_layers),
+            _get_model(dataset_name, self.model_type, self.num_resnet_layers),
             self.model_type, optimiser_type, learning_rate)
         # TODO loading of previously saved model
         if model.cuda_available:
