@@ -103,7 +103,18 @@ class RefineNet(object):
     def predict(self, image=None, image_file=None, output_file=None):
         pass
 
-    def train(self, dataset, learning_rate=5e-4, optimiser_type=None):
+    def train(self,
+              dataset,
+              *,
+              batch_size=4,
+              display_interval=10,
+              eval_interval=1,
+              freeze_batch_normal=False,
+              learning_rate=5e-4,
+              num_workers=4,
+              optimiser_type=OPTIMISER_TYPES[1],
+              output_directory=None,
+              snapshot_interval=5):
         # Perform argument validation / set defaults
         optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
                                        RefineNet.OPTIMISER_TYPES)
@@ -119,11 +130,20 @@ class RefineNet(object):
             _get_model(dataset, self.model_type, self.num_resnet_layers),
             self.model_type, optimiser_type, learning_rate)
         # TODO loading of previously saved model
-        if model.cuda_available():
+        if model.cuda_available:
             model.cuda()
 
         # Start a model trainer
-        Trainer().train(model, dataset_dir)
+        print("\nPERFORMING TRAINING")
+        Trainer(output_directory).train(
+            model,
+            dataset_dir,
+            eval_interval=eval_interval,
+            snapshot_interval=snapshot_interval,
+            display_interval=display_interval,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            freeze_batch_normal=freeze_batch_normal)
 
 
 def _get_model(dataset, model_type, num_resnet_layers, pretrained='imagenet'):
@@ -158,9 +178,9 @@ def _get_optimiser(model, model_type, optimiser_type, learning_rate):
               else torch.optim.Adam)
     opt_params = ({
         'momentum':
-        0.9,
+            0.9,
         'weight_decay':
-        5e-4 if model_type == RefineNet.MODEL_TYPES[0] else 1e-5
+            5e-4 if model_type == RefineNet.MODEL_TYPES[0] else 1e-5
     } if optimiser_type == RefineNet.OPTIMISER_TYPES[1] else {})
     model.enc_optimiser = opt_fn(lr=learning_rate,
                                  params=enc_params,

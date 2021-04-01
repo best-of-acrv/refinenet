@@ -12,26 +12,24 @@ def get_lr(optimizer):
 
 class Trainer(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, output_directory=None):
         super().__init__()
 
-        # create directory for outputs
-        self.eval_interval = args.eval_interval
-        self.display_interval = args.display_interval
-        self.snapshot_interval = args.snapshot_interval
-        self.load_directory = args.load_directory
-        self.save_directory = args.save_directory
+        # Declare directory for outputs
+        self.output_directory = output_directory
 
-    def train(self, args, model, dataset):
+    def train(self, model, dataset, *, eval_interval, snapshot_interval,
+              display_interval, batch_size, num_workers, freeze_batch_normal):
 
         # freeze batch norm during training
-        if args.freeze_bn:
+        if freeze_batch_normal:
             for m in model.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
 
         # make save directory
-        os.makedirs(self.save_directory, exist_ok=True)
+        if self.output_directory is not None:
+            os.makedirs(self.output_directory, exist_ok=True)
 
         # go through each dataset
         curr_epoch = 0
@@ -50,9 +48,9 @@ class Trainer(nn.Module):
 
             # setup dataloader
             dataloader = DataLoader(d,
-                                    batch_size=args.batch_size,
+                                    batch_size=batch_size,
                                     shuffle=True,
-                                    num_workers=args.num_workers)
+                                    num_workers=num_workers)
 
             # define loss criterion
             criterion = nn.NLLLoss(ignore_index=d.ignore_index)
@@ -75,7 +73,7 @@ class Trainer(nn.Module):
                     mean_loss = model.fit(data, labels, criterion)
 
                     # display current training loss
-                    if (curr_iteration + 1) % self.display_interval == 0:
+                    if (curr_iteration + 1) % display_interval == 0:
                         stop = timeit.default_timer()
                         print(
                             '[Epoch: {}] [Iter: {}] [Time: {:3f}] [Lr: {}] [loss: {:4f}]'
@@ -86,27 +84,28 @@ class Trainer(nn.Module):
                     curr_iteration += 1
 
                 # evaluate model by computing mean IU
-                if (epoch + 1) % self.eval_interval == 0 and dataset['val']:
-
+                if (epoch + 1) % eval_interval == 0 and dataset['val']:
                     # set model to eval first
                     model.eval()
                     mean_iu = model.validate(dataset['val'])
                     print('[Epoch: {}] [Iter: {}] [mean IU: {:4f}]'.format(
                         curr_epoch, curr_iteration + 1, mean_iu))
-                    with open(os.path.join(self.save_directory, 'mean_iu.txt'),
-                              'a') as f:
-                        f.writelines([
-                            'Epoch: ',
-                            str(curr_epoch + 1), ' ', 'Mean IU: ',
-                            str(mean_iu), '\n'
-                        ])
+                    if self.output_directory is not None:
+                        with open(
+                                os.path.join(self.output_directory,
+                                             'mean_iu.txt'), 'a') as f:
+                            f.writelines([
+                                'Epoch: ',
+                                str(curr_epoch + 1), ' ', 'Mean IU: ',
+                                str(mean_iu), '\n'
+                            ])
 
                     # model back to train mode
                     model.train()
 
                 # save the model
-                if (epoch + 1) % self.snapshot_interval == 0:
-                    model.save(curr_epoch + 1, self.save_directory)
+                if (epoch + 1) % snapshot_interval == 0:
+                    model.save(curr_epoch + 1, self.output_directory)
 
                 # step scheduler
                 enc_scheduler.step()
