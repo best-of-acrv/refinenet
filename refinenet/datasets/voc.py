@@ -4,14 +4,19 @@ import torch
 import random
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from data_utils.read_filelist import read_filelist
-from utils.cmap import ColourMap
+
+from .helpers import read_filelist
+from ..helpers import ColourMap
 
 
 class VOC(Dataset):
     '''Pascal VOC Segmentation dataset.'''
 
-    def __init__(self, root_dir, image_set='train', transform=None, target_transform=None):
+    def __init__(self,
+                 root_dir,
+                 image_set='train',
+                 transform=None,
+                 target_transform=None):
         '''
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -23,11 +28,20 @@ class VOC(Dataset):
         self.root_dir = root_dir
         self.image_set = image_set
         if self.image_set == 'train':
-            self.file_list = read_filelist(os.path.join(root_dir, 'VOCdevkit/VOC2012/ImageSets/Segmentation/train.txt'))
+            self.file_list = read_filelist(
+                os.path.join(
+                    root_dir,
+                    'VOCdevkit/VOC2012/ImageSets/Segmentation/train.txt'))
         elif self.image_set == 'trainval':
-            self.file_list = read_filelist(os.path.join(root_dir, 'VOCdevkit/VOC2012/ImageSets/Segmentation/trainval.txt'))
+            self.file_list = read_filelist(
+                os.path.join(
+                    root_dir,
+                    'VOCdevkit/VOC2012/ImageSets/Segmentation/trainval.txt'))
         elif self.image_set == 'val':
-            self.file_list = read_filelist(os.path.join(root_dir, 'VOCdevkit/VOC2012/ImageSets/Segmentation/val.txt'))
+            self.file_list = read_filelist(
+                os.path.join(
+                    root_dir,
+                    'VOCdevkit/VOC2012/ImageSets/Segmentation/val.txt'))
         self.transform = transform
         self.target_transform = target_transform
 
@@ -48,12 +62,15 @@ class VOC(Dataset):
         filename = self.file_list[idx]
 
         # load image data and convert to ndarray
-        img_name = os.path.join(self.root_dir, 'VOCdevkit/VOC2012/JPEGImages', filename + '.jpg')
+        img_name = os.path.join(self.root_dir, 'VOCdevkit/VOC2012/JPEGImages',
+                                filename + '.jpg')
         image = Image.open(img_name)
         image = image.convert('RGB')
 
         # load label data
-        label_name = os.path.join(self.root_dir, 'VOCdevkit/VOC2012/SegmentationClass', filename + '.png')
+        label_name = os.path.join(self.root_dir,
+                                  'VOCdevkit/VOC2012/SegmentationClass',
+                                  filename + '.png')
         label = Image.open(label_name)
 
         seed = np.random.randint(2147483647)

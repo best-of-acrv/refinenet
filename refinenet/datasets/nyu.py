@@ -4,13 +4,19 @@ import torch
 import random
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from data_utils.read_filelist import read_filelist
-from utils.cmap import ColourMap
+
+from .helpers import read_filelist
+from ..helpers import ColourMap
+
 
 class NYU(Dataset):
     '''NYUv2-40 Segmentation dataset.'''
 
-    def __init__(self, root_dir, image_set='train', transform=None, target_transform=None):
+    def __init__(self,
+                 root_dir,
+                 image_set='train',
+                 transform=None,
+                 target_transform=None):
         '''
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -46,12 +52,14 @@ class NYU(Dataset):
         filename = self.file_list[idx]
 
         # load image data
-        img_name = os.path.join(self.root_dir, 'images', 'img_' + filename + '.png')
+        img_name = os.path.join(self.root_dir, 'images',
+                                'img_' + filename + '.png')
         image = Image.open(img_name)
         image = image.convert('RGB')
 
         # load label data
-        label_name = os.path.join(self.root_dir, 'labels', 'gt_' + filename + '.png')
+        label_name = os.path.join(self.root_dir, 'labels',
+                                  'gt_' + filename + '.png')
         label = Image.open(label_name)
 
         seed = np.random.randint(2147483647)

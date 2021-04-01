@@ -5,13 +5,19 @@ import random
 from PIL import Image
 from scipy.io import loadmat
 from torch.utils.data.dataset import Dataset
-from data_utils.read_filelist import read_filelist
-from utils.cmap import ColourMap
+
+from .helpers import read_filelist
+from ..helpers import ColourMap
+
 
 class SBD(Dataset):
     '''Semantic Boundaries Segmentation dataset.'''
 
-    def __init__(self, root_dir, image_set='train', transform=None, target_transform=None):
+    def __init__(self,
+                 root_dir,
+                 image_set='train',
+                 transform=None,
+                 target_transform=None):
         '''
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -23,9 +29,13 @@ class SBD(Dataset):
         self.root_dir = root_dir
         self.image_set = image_set
         if self.image_set == 'train':
-            self.file_list = read_filelist(os.path.join(root_dir, 'benchmark_RELEASE', 'dataset', 'train.txt'))
+            self.file_list = read_filelist(
+                os.path.join(root_dir, 'benchmark_RELEASE', 'dataset',
+                             'train.txt'))
         elif self.image_set == 'val':
-            self.file_list = read_filelist(os.path.join(root_dir, 'benchmark_RELEASE', 'dataset', 'val.txt'))
+            self.file_list = read_filelist(
+                os.path.join(root_dir, 'benchmark_RELEASE', 'dataset',
+                             'val.txt'))
         self.transform = transform
         self.target_transform = target_transform
 
@@ -46,12 +56,14 @@ class SBD(Dataset):
         filename = self.file_list[idx]
 
         # load image data
-        img_name = os.path.join(self.root_dir, 'benchmark_RELEASE', 'dataset', 'img', filename + '.jpg')
+        img_name = os.path.join(self.root_dir, 'benchmark_RELEASE', 'dataset',
+                                'img', filename + '.jpg')
         image = Image.open(img_name)
         image = image.convert('RGB')
 
         # load label data
-        label_name = os.path.join(self.root_dir, 'benchmark_RELEASE', 'dataset', 'cls', filename + '.mat')
+        label_name = os.path.join(self.root_dir, 'benchmark_RELEASE',
+                                  'dataset', 'cls', filename + '.mat')
         label = loadmat(label_name)
         label = label['GTcls']['Segmentation'][0][0]
         label = Image.fromarray(label)
