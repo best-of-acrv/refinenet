@@ -1,8 +1,11 @@
 import acrv_datasets
 import os
+import PIL.Image as Image
 import re
 import torch
+from torchvision import transforms
 
+from .datasets.helpers import get_transforms
 from .models import refinenet, refinenet_lw
 from .trainer import Trainer
 
@@ -114,10 +117,11 @@ class RefineNet(object):
                                        RefineNet.OPTIMISER_TYPES)
 
         # Obtain access to the dataset
-        print("\nGETTING DATASETS:")
+        print("\nGETTING DATASET:")
         if dataset_dir is None:
             dataset_dir = acrv_datasets.get_datasets(dataset_name)
         print("Using 'dataset_dir': %s" % dataset_dir)
+        dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
         # Load in a starting model, and moving it to the device if required
         print("\nGETTING REQUESTED MODELS")
@@ -132,7 +136,7 @@ class RefineNet(object):
         print("\nPERFORMING TRAINING")
         Trainer(output_directory).train(
             model,
-            dataset_dir,
+            dataset,
             eval_interval=eval_interval,
             snapshot_interval=snapshot_interval,
             display_interval=display_interval,
@@ -186,6 +190,46 @@ def _get_optimiser(model, model_type, optimiser_type, learning_rate):
         params=dec_params,
         **opt_params)
     return model
+
+
+def _get_transforms(crop_size=224, lower_scale=1.0, upper_scale=1.0):
+    # Returns 4 transforms: transform train, target transform train, transform
+    # eval & target transform eval
+    return (transforms.Compose([
+        transforms.RandomResizedCrop(size=crop_size,
+                                     scale=(lower_scale, upper_scale),
+                                     interpolation=Image.BILINEAR),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    ]),
+            transforms.Compose([
+                transforms.RandomResizedCrop(size=crop_size,
+                                             scale=(lower_scale, upper_scale),
+                                             interpolation=Image.NEAREST),
+                transforms.RandomHorizontalFlip()
+            ]),
+            transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+            ]), None)
+
+
+def _load_dataset(dataset_name, dataset_dir, model_type):
+    # Get transformations
+    (transform_train, target_transform_train, transform_eval,
+     target_transform_eval) = _get_transforms(**({
+         'crop_size': 400,
+         'lower_scale': 0.7,
+         'upper_scale': 1.3
+     } if model_type == RefineNet.MODEL_TYPES[0] else {
+         'crop_size': 500,
+         'lower_scale': 0.5,
+         'upper_scale': 2.0
+     }))
+    pass
 
 
 def _sanitise_arg(value, name, supported_list):
