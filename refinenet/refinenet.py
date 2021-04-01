@@ -5,7 +5,10 @@ import re
 import torch
 from torchvision import transforms
 
-from .datasets.helpers import get_transforms
+# from .datasets.coco import COCODataset
+from .datasets.nyu import NYU
+from .datasets.sbd import SBD
+from .datasets.voc import VOC
 from .models import refinenet, refinenet_lw
 from .trainer import Trainer
 
@@ -119,6 +122,7 @@ class RefineNet(object):
         # Obtain access to the dataset
         print("\nGETTING DATASET:")
         if dataset_dir is None:
+            # TODO translate voc into all the required datasets
             dataset_dir = acrv_datasets.get_datasets(dataset_name)
         print("Using 'dataset_dir': %s" % dataset_dir)
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
@@ -145,8 +149,8 @@ class RefineNet(object):
             freeze_batch_normal=freeze_batch_normal)
 
 
-def _get_model(dataset, model_type, num_resnet_layers, pretrained='imagenet'):
-    num_classes = {'nyu': 40, 'voc': 21, 'citiscapes': 19}[dataset]
+def _get_model(dataset_name, model_type, num_resnet_layers, pretrained='imagenet'):
+    num_classes = {'nyu': 40, 'voc': 21, 'citiscapes': 19}[dataset_name]
     return {
         RefineNet.MODEL_TYPES[0]: {
             50: refinenet.refinenet50,
@@ -229,7 +233,28 @@ def _load_dataset(dataset_name, dataset_dir, model_type):
          'lower_scale': 0.5,
          'upper_scale': 2.0
      }))
-    pass
+
+    # Construct & return the dataset dictionary
+    # TODO dataset dirs for VOC aren't currently handled correctly!!!
+    train_args = {
+            'root_dir': dataset_dir, 'image_set': 'train', 'transform': transform_train, 'target_transform': target_transform_train
+            }
+    eval_args = {
+            'root_dir': dataset_dir, 'image_set': 'test', 'transform': transform_eval, 'target_transform': target_transform_eval
+            }
+    return ({
+        'train': [NYU(**train_args)] * (2 if model_type == RefineNet.MODEL_TYPES[0] else 3),
+        'val': NYU(**eval_args),
+        'stage_epochs': ([250, 250] if model_type == RefineNet.MODEL_TYPES[0]
+                         else [100, 100, 100]),
+        'stage_gammas': ([0.1, 0.1] if model_type == RefineNet.MODEL_TYPES[0]
+                         else [0.5, 0.5, 0.5])
+    } if dataset_name == RefineNet.DATASETS[0] else {
+        'train': [COCODataset(**train_args), SBD(**train_args), VOC(**train_args)],
+        'val': [VOC(**eval_args)],
+        'stage_epochs': [20, 50, 200],
+        'stage_gammas': ([0.1 if model_type == RefineNet.MODEL_TYPES[0] else 0.5] * 3)
+    })
 
 
 def _sanitise_arg(value, name, supported_list):
