@@ -11,6 +11,7 @@ def get_lr(optimizer):
 
 
 class Trainer(nn.Module):
+
     def __init__(self, args):
         super().__init__()
 
@@ -28,13 +29,6 @@ class Trainer(nn.Module):
             for m in model.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
-
-        # dataset for validating
-        if dataset['val']:
-            val_dataloader = DataLoader(dataset['val'],
-                                        batch_size=1,
-                                        shuffle=False,
-                                        num_workers=1)
 
         # make save directory
         os.makedirs(self.save_directory, exist_ok=True)
