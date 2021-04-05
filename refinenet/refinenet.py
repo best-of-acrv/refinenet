@@ -83,6 +83,7 @@ class RefineNet(object):
         self.num_resnet_layers = _sanitise_arg(num_resnet_layers,
                                                'num_resnet_layers',
                                                RefineNet.NUM_LAYERS)
+        # TODO these parameters are currently useless...
         self.weights = weights
         self.weights_file = weights_file
 
@@ -111,7 +112,7 @@ class RefineNet(object):
               learning_rate=5e-4,
               num_workers=4,
               optimiser_type=OPTIMISER_TYPES[1],
-              output_directory=None,
+              output_directory=os.path.expanduser('~/refinenet-output'),
               snapshot_interval=5):
         # Perform argument validation / set defaults
         dataset_name = _sanitise_arg(dataset_name, 'dataset',
@@ -128,7 +129,7 @@ class RefineNet(object):
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
         # Load in a starting model, and moving it to the device if required
-        print("\nGETTING REQUESTED MODELS")
+        print("\nGETTING REQUESTED MODELS:")
         model = _get_optimiser(
             _get_model(dataset_name, self.model_type, self.num_resnet_layers),
             self.model_type, optimiser_type, learning_rate)
@@ -137,7 +138,7 @@ class RefineNet(object):
             model.cuda()
 
         # Start a model trainer
-        print("\nPERFORMING TRAINING")
+        print("\nPERFORMING TRAINING:")
         Trainer(output_directory).train(
             model,
             dataset,
