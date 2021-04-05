@@ -70,9 +70,9 @@ class RefineNet(object):
 
     def __init__(self,
                  gpu_id=0,
-                 model_type=MODEL_TYPES[0],
+                 model_type='full',
                  model_seed=0,
-                 num_resnet_layers=NUM_LAYERS[0],
+                 num_resnet_layers=50,
                  weights=None,
                  weights_file=None):
         # Apply sanitised arguments
@@ -111,7 +111,7 @@ class RefineNet(object):
               freeze_batch_normal=False,
               learning_rate=5e-4,
               num_workers=4,
-              optimiser_type=OPTIMISER_TYPES[1],
+              optimiser_type='sgd',
               output_directory=os.path.expanduser('~/refinenet-output'),
               snapshot_interval=5):
         # Perform argument validation / set defaults
