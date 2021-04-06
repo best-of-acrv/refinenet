@@ -11,6 +11,8 @@ from ..helpers import ColourMap
 
 class VOC(Dataset):
     '''Pascal VOC Segmentation dataset.'''
+    COLOUR_MAP = ColourMap(dataset='cov')
+    LABEL_OFFSET = 0
     NUM_CLASSES = 21
 
     def __init__(self,
@@ -49,8 +51,8 @@ class VOC(Dataset):
         # dataset properties
         self.num_classes = VOC.NUM_CLASSES
         self.ignore_index = 255
-        self.label_offset = 0
-        self.cmap = ColourMap(dataset='voc')
+        self.label_offset = VOC.LABEL_OFFSET
+        self.cmap = VOC.COLOUR_MAP
 
     def __len__(self):
         return len(self.file_list)

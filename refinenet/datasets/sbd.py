@@ -12,6 +12,9 @@ from ..helpers import ColourMap
 
 class SBD(Dataset):
     '''Semantic Boundaries Segmentation dataset.'''
+    COLOUR_MAP = ColourMap(dataset='voc')
+    LABEL_OFFSET = 0
+    NUM_CLASSES = 21
 
     def __init__(self,
                  root_dir,
@@ -40,10 +43,10 @@ class SBD(Dataset):
         self.target_transform = target_transform
 
         # dataset properties
-        self.num_classes = 21
+        self.num_classes = SBD.NUM_CLASSES
         self.ignore_index = 255
-        self.label_offset = 0
-        self.cmap = ColourMap(dataset='voc')
+        self.label_offset = SBD.LABEL_OFFSET
+        self.cmap = SBD.COLOUR_MAP
 
     def __len__(self):
         return len(self.file_list)

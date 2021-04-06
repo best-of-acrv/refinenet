@@ -14,19 +14,30 @@ from utils.cmap import ColourMap
 
 class COCODataset(Dataset):
     '''Microsoft COCO Segmentation dataset.'''
+    COLOUR_MAP = ColourMap(dataset='voc')
+    LABEL_OFFSET = 0
+    NUM_CLASSES = 21
 
-    def __init__(self, root_dir, image_set='train', transform=None, target_transform=None):
+    def __init__(self,
+                 root_dir,
+                 image_set='train',
+                 transform=None,
+                 target_transform=None):
 
         self.root_dir = root_dir
         self.image_set = image_set
         if self.image_set == 'train':
             self.img_dir = os.path.join(root_dir, 'train2017')
-            self.ann_file = os.path.join(root_dir, 'annotations/instances_train2017.json')
-            self.ids_file = os.path.join(root_dir, 'annotations/instances_train2017_ids.mx')
+            self.ann_file = os.path.join(
+                root_dir, 'annotations/instances_train2017.json')
+            self.ids_file = os.path.join(
+                root_dir, 'annotations/instances_train2017_ids.mx')
         elif self.image_set == 'val':
             self.img_dir = os.path.join(root_dir, 'val2017')
-            self.ann_file = os.path.join(root_dir, 'annotations/instances_val2017.json')
-            self.ids_file = os.path.join(root_dir, 'annotations/instances_val2017_ids.mx')
+            self.ann_file = os.path.join(root_dir,
+                                         'annotations/instances_val2017.json')
+            self.ids_file = os.path.join(
+                root_dir, 'annotations/instances_val2017_ids.mx')
         self.transform = transform
         self.target_transform = target_transform
 
@@ -46,10 +57,10 @@ class COCODataset(Dataset):
             self.img_ids = self.preprocess(ids, self.ids_file)
 
         # dataset properties
-        self.num_classes = 21
+        self.num_classes = COCO.NUM_CLASSES
         self.ignore_index = 255
-        self.label_offset = 0
-        self.cmap = ColourMap(dataset='voc')
+        self.label_offset = COCO.LABEL_OFFSET
+        self.cmap = COCO.COLOUR_MAP
 
     def __get_year(self):
         name = self.dataset_name
@@ -125,7 +136,8 @@ class COCODataset(Dataset):
             if len(m.shape) < 3:
                 mask[:, :] += (mask == 0) * (m * c)
             else:
-                mask[:, :] += (mask == 0) * (((np.sum(m, axis=2)) > 0) * c).astype(np.uint8)
+                mask[:, :] += (mask == 0) * ((
+                    (np.sum(m, axis=2)) > 0) * c).astype(np.uint8)
         return mask
 
     def preprocess(self, ids, ids_file):
@@ -135,10 +147,13 @@ class COCODataset(Dataset):
             img_id = ids[i]
             cocotarget = self.coco.loadAnns(self.coco.getAnnIds(imgIds=img_id))
             img_metadata = self.coco.loadImgs(img_id)[0]
-            mask = self.gen_seg_mask(cocotarget, img_metadata['height'], img_metadata['width'])
+            mask = self.gen_seg_mask(cocotarget, img_metadata['height'],
+                                     img_metadata['width'])
             if (mask > 0).sum() > 1000:
                 new_ids.append(img_id)
-            tbar.set_description('Doing: {}/{}, got {} qualified images'.format(i, len(ids), len(new_ids)))
+            tbar.set_description(
+                'Doing: {}/{}, got {} qualified images'.format(
+                    i, len(ids), len(new_ids)))
         print('Found number of qualified images: ', len(new_ids))
         with open(ids_file, 'wb') as f:
             pickle.dump(new_ids, f)

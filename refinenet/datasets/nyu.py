@@ -11,6 +11,8 @@ from ..helpers import ColourMap
 
 class NYU(Dataset):
     '''NYUv2-40 Segmentation dataset.'''
+    COLOUR_MAP = ColourMap(dataset='voc')
+    LABEL_OFFSET = 1
     NUM_CLASSES = 40
 
     def __init__(self,
@@ -39,8 +41,8 @@ class NYU(Dataset):
         # dataset properties
         self.num_classes = NYU.NUM_CLASSES
         self.ignore_index = 255
-        self.label_offset = 1
-        self.cmap = ColourMap(dataset='voc')
+        self.label_offset = NYU.LABEL_OFFSET
+        self.cmap = NYU.COLOUR_MAP
 
     def __len__(self):
         return len(self.file_list)
