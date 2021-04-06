@@ -120,8 +120,18 @@ class RefineNet(object):
             raise RuntimeWarning("PyTorch could not find CUDA, using CPU ...")
         self.model.cuda()
 
-    def eval(self, dataset=None, output_file=None):
-        pass
+    def eval(self,
+             dataset_name,
+             *,
+             dataset_dir=None,
+             multi_scale=False,
+             output_file=None):
+        # Perform argument validation
+        dataset_name = _sanitise_arg(dataset_name, 'dataset_name',
+                                     RefineNet.DATASETS)
+
+        # Load in the dataset
+        dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
     def predict(self,
                 *,
@@ -134,9 +144,8 @@ class RefineNet(object):
         cmap_preset = _sanitise_arg(colour_map_preset, 'colour_map_preset',
                                     RefineNet.COLORMAP_PRESETS)
         if (image and image_file):
-            raise ValueError(
-                "Only one of 'image' or 'image_file' can be ""used in a call, not both."
-            )
+            raise ValueError("Only one of 'image' or 'image_file' can be "
+                             "used in a call, not both.")
         elif not image and not image_file:
             raise ValueError("Either 'image' or 'image_file' must be provided")
         if output_file:
@@ -173,7 +182,7 @@ class RefineNet(object):
               output_directory=os.path.expanduser('~/refinenet-output'),
               snapshot_interval=5):
         # Perform argument validation / set defaults
-        dataset_name = _sanitise_arg(dataset_name, 'dataset',
+        dataset_name = _sanitise_arg(dataset_name, 'dataset_name',
                                      RefineNet.DATASETS)
         optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
                                        RefineNet.OPTIMISER_TYPES)
@@ -185,12 +194,7 @@ class RefineNet(object):
                 "model has been created for '%d' classes." %
                 (dataset_num_classes, self.model.num_classes))
 
-        # Obtain access to the dataset
-        print("\nGETTING DATASET:")
-        if dataset_dir is None:
-            # TODO translate voc into all the required datasets
-            dataset_dir = acrv_datasets.get_datasets(dataset_name)
-        print("Using 'dataset_dir': %s" % dataset_dir)
+        # Load in the dataset
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
         # Attach new optimiser if required (and resend to GPU???)
@@ -308,7 +312,16 @@ def _get_transforms(crop_size=224, lower_scale=1.0, upper_scale=1.0):
             ]), None)
 
 
-def _load_dataset(dataset_name, dataset_dir, model_type):
+def _load_dataset(dataset_name, dataset_dir, model_type, quiet=False):
+    # Print some verbose information
+    if not quiet:
+        print("\nGETTING DATASET:")
+        if dataset_dir is None:
+            # TODO translate voc into all the required datasets (i.e. this
+            # should handle multiple dataset_dirs)
+            dataset_dir = acrv_datasets.get_datasets(dataset_name)
+        print("Using 'dataset_dir': %s" % dataset_dir)
+
     # Get transformations
     (transform_train, target_transform_train, transform_eval,
      target_transform_eval) = _get_transforms(**({
