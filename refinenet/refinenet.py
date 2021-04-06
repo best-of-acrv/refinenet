@@ -10,6 +10,7 @@ from .datasets.nyu import NYU
 from .datasets.sbd import SBD
 from .datasets.voc import VOC
 from .models import refinenet, refinenet_lw
+from .predictor import Predictor
 from .trainer import Trainer
 
 # Param list from old mode:
@@ -62,6 +63,8 @@ from .trainer import Trainer
 
 
 class RefineNet(object):
+    # TODO should citiscapes, coco, sbd be in here???
+    COLORMAP_PRESETS = {'nyu': NYU, 'voc': VOC}
     # TODO citiscapes should be in these lists!!!
     DATASETS = ['nyu', 'voc']
     DATASET_NUM_CLASSES = {'nyu': NYU.NUM_CLASSES, 'voc': VOC.NUM_CLASSES}
@@ -120,8 +123,41 @@ class RefineNet(object):
     def eval(self, dataset=None, output_file=None):
         pass
 
-    def predict(self, image=None, image_file=None, output_file=None):
-        pass
+    def predict(self,
+                *,
+                colour_map_preset='nyu',
+                image=None,
+                image_file=None,
+                multi_scale=False,
+                output_file=None):
+        # Handle input arguments
+        cmap_preset = _sanitise_arg(colour_map_preset, 'colour_map_preset',
+                                    RefineNet.COLORMAP_PRESETS)
+        if (image and image_file):
+            raise ValueError(
+                "Only one of 'image' or 'image_file' can be ""used in a call, not both."
+            )
+        elif not image and not image_file:
+            raise ValueError("Either 'image' or 'image_file' must be provided")
+        if output_file:
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        # Construct the input image
+        # TODO handle raw image input
+        img = Image.open(image_file).convert('RGB')
+        img = _get_transforms()[2](img)
+
+        # Perform the forward pass
+        out = Predictor(multi_scale=multi_scale).predict(
+            img,
+            self.model,
+            colour_map=cmap_preset.COLOUR_MAP,
+            label_offset=cmap_preset.LABEL_OFFSET)
+
+        # Save the file if requested, & return the output
+        if output_file:
+            Image.fromarray(out).save(output_file)
+        return out
 
     def train(self,
               dataset_name,
