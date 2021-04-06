@@ -62,38 +62,60 @@ from .trainer import Trainer
 
 
 class RefineNet(object):
+    # TODO citiscapes should be in these lists!!!
     DATASETS = ['nyu', 'voc']
+    DATASET_NUM_CLASSES = {'nyu': NYU.NUM_CLASSES, 'voc': VOC.NUM_CLASSES}
+
     MODEL_TYPES = ['full', 'lightweight']
     NUM_LAYERS = [50, 101, 152]
     OPTIMISER_TYPES = ['adam', 'sgd']
-    WEIGHTS = ['nyu', 'voc', 'citiscapes']
+    PRETRAINED = ['imagenet', 'nyu', 'voc']
 
     def __init__(self,
+                 *,
                  gpu_id=0,
                  model_type='full',
                  model_seed=0,
+                 num_classes=21,
                  num_resnet_layers=50,
-                 weights=None,
-                 weights_file=None):
+                 load_pretrained='imagenet',
+                 load_snapshot=None,
+                 load_snapshot_optimiser=True):
         # Apply sanitised arguments
         self.gpu_id = gpu_id
         self.model_type = _sanitise_arg(model_type, 'model_type',
                                         RefineNet.MODEL_TYPES)
         self.model_seed = model_seed
+        self.num_classes = num_classes
         self.num_resnet_layers = _sanitise_arg(num_resnet_layers,
                                                'num_resnet_layers',
                                                RefineNet.NUM_LAYERS)
-        # TODO these parameters are currently useless...
-        self.weights = weights
-        self.weights_file = weights_file
+        self.load_pretrained = (
+            None if load_pretrained is None else _sanitise_arg(
+                load_pretrained, 'load_pretrained', RefineNet.PRETRAINED))
+        self.load_snapshot = load_snapshot
+        self.load_snapshot_optimiser = load_snapshot_optimiser
 
-        # Initialise the network
+        # Load the model based on the specified parameters
+        self.model = None
+        if self.load_snapshot:
+            print("\nLOADING MODEL FROM SNAPSHOT:")
+            self.model = _from_snapshot(self.load_snapshot,
+                                        self.load_snapshot_optimiser)
+        else:
+            print("\nLOADING MODEL FROM PRE-TRAINED WEIGHTS:")
+            self.model = _get_model(self.model_type,
+                                    self.num_resnet_layers,
+                                    self.num_classes,
+                                    pretrained=self.load_pretrained)
+
+        # Try setting up GPU integration
         os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
         os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_id)
         torch.manual_seed(self.model_seed)
-
         if not torch.cuda.is_available():
             raise RuntimeWarning("PyTorch could not find CUDA, using CPU ...")
+        self.model.cuda()
 
     def eval(self, dataset=None, output_file=None):
         pass
@@ -119,6 +141,13 @@ class RefineNet(object):
                                      RefineNet.DATASETS)
         optimiser_type = _sanitise_arg(optimiser_type, 'optimiser_type',
                                        RefineNet.OPTIMISER_TYPES)
+        dataset_num_classes = RefineNet.DATASET_NUM_CLASSES.get(
+            dataset_name, 0)
+        if self.model.num_classes != dataset_num_classes:
+            raise ValueError(
+                "Can't train using a dataset with '%d' classes, when your "
+                "model has been created for '%d' classes." %
+                (dataset_num_classes, self.model.num_classes))
 
         # Obtain access to the dataset
         print("\nGETTING DATASET:")
@@ -128,19 +157,19 @@ class RefineNet(object):
         print("Using 'dataset_dir': %s" % dataset_dir)
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
-        # Load in a starting model, and moving it to the device if required
-        print("\nGETTING REQUESTED MODELS:")
-        model = _get_optimiser(
-            _get_model(dataset_name, self.model_type, self.num_resnet_layers),
-            self.model_type, optimiser_type, learning_rate)
-        # TODO loading of previously saved model
-        if model.cuda_available:
-            model.cuda()
+        # Attach new optimiser if required (and resend to GPU???)
+        if (not hasattr(self.model, 'enc_optimiser') or
+                not hasattr(self.model, 'dec_optimiser')):
+            print("\nATTACHING NEW OPTIMISERS:")
+            _attach_new_optimiser(self.model, self.model_type, optimiser_type,
+                                  learning_rate)
+            if self.model.cuda_available:
+                self.model.cuda()
 
         # Start a model trainer
         print("\nPERFORMING TRAINING:")
         Trainer(output_directory).train(
-            model,
+            self.model,
             dataset,
             eval_interval=eval_interval,
             snapshot_interval=snapshot_interval,
@@ -150,24 +179,7 @@ class RefineNet(object):
             freeze_batch_normal=freeze_batch_normal)
 
 
-def _get_model(dataset_name, model_type, num_resnet_layers, pretrained='imagenet'):
-    num_classes = {'nyu': 40, 'voc': 21, 'citiscapes': 19}[dataset_name]
-    return {
-        RefineNet.MODEL_TYPES[0]: {
-            50: refinenet.refinenet50,
-            101: refinenet.refinenet101,
-            152: refinenet.refinenet152
-        },
-        RefineNet.MODEL_TYPES[1]: {
-            50: refinenet_lw.refinenet_lw50,
-            101: refinenet_lw.refinenet_lw101,
-            152: refinenet_lw.refinenet_lw152
-        }
-    }[model_type][num_resnet_layers](num_classes=num_classes,
-                                     pretrained=pretrained)
-
-
-def _get_optimiser(model, model_type, optimiser_type, learning_rate):
+def _attach_new_optimiser(model, model_type, optimiser_type, learning_rate):
     # Get encoder and decoder parameters from the model
     enc_params = []
     dec_params = []
@@ -194,7 +206,45 @@ def _get_optimiser(model, model_type, optimiser_type, learning_rate):
             learning_rate),
         params=dec_params,
         **opt_params)
-    return model
+
+
+def _from_snapshot(snapshot_filename, with_optim=True):
+    print('Loading model from:\n\t%s' % snapshot_filename)
+    full_model = torch.load(snapshot_filename)
+
+    # Determine what class to load
+
+    # self.load_state_dict(full_model['model'], strict=False)
+    # if with_optim:
+    #     self.enc_optimiser.load_state_dict(full_model['enc_optimiser'])
+    #     self.dec_optimiser.load_state_dict(full_model['dec_optimiser'])
+    #     # move optimiser to cuda
+    #     if self.cuda_available:
+    #         for state in self.optimiser.state.values():
+    #             for k, v in state.items():
+    #                 if isinstance(v, torch.Tensor):
+    #                     state[k] = v.cuda()
+    curr_iteration = full_model['global_iteration']
+    return curr_iteration
+
+
+def _get_model(model_type,
+               num_resnet_layers,
+               num_classes,
+               pretrained='imagenet'):
+    return {
+        RefineNet.MODEL_TYPES[0]: {
+            50: refinenet.refinenet50,
+            101: refinenet.refinenet101,
+            152: refinenet.refinenet152
+        },
+        RefineNet.MODEL_TYPES[1]: {
+            50: refinenet_lw.refinenet_lw50,
+            101: refinenet_lw.refinenet_lw101,
+            152: refinenet_lw.refinenet_lw152
+        }
+    }[model_type][num_resnet_layers](num_classes=num_classes,
+                                     pretrained=pretrained)
 
 
 def _get_transforms(crop_size=224, lower_scale=1.0, upper_scale=1.0):
@@ -229,7 +279,7 @@ def _load_dataset(dataset_name, dataset_dir, model_type):
          'crop_size': 400,
          'lower_scale': 0.7,
          'upper_scale': 1.3
-     } if model_type == RefineNet.MODEL_TYPES[0] else {
+     } if model_type == 'full' else {
          'crop_size': 500,
          'lower_scale': 0.5,
          'upper_scale': 2.0
@@ -238,23 +288,33 @@ def _load_dataset(dataset_name, dataset_dir, model_type):
     # Construct & return the dataset dictionary
     # TODO dataset dirs for VOC aren't currently handled correctly!!!
     train_args = {
-            'root_dir': dataset_dir, 'image_set': 'train', 'transform': transform_train, 'target_transform': target_transform_train
-            }
+        'root_dir': dataset_dir,
+        'image_set': 'train',
+        'transform': transform_train,
+        'target_transform': target_transform_train
+    }
     eval_args = {
-            'root_dir': dataset_dir, 'image_set': 'test', 'transform': transform_eval, 'target_transform': target_transform_eval
-            }
+        'root_dir': dataset_dir,
+        'image_set': 'test',
+        'transform': transform_eval,
+        'target_transform': target_transform_eval
+    }
     return ({
-        'train': [NYU(**train_args)] * (2 if model_type == RefineNet.MODEL_TYPES[0] else 3),
-        'val': NYU(**eval_args),
-        'stage_epochs': ([250, 250] if model_type == RefineNet.MODEL_TYPES[0]
-                         else [100, 100, 100]),
-        'stage_gammas': ([0.1, 0.1] if model_type == RefineNet.MODEL_TYPES[0]
-                         else [0.5, 0.5, 0.5])
-    } if dataset_name == RefineNet.DATASETS[0] else {
-        'train': [COCODataset(**train_args), SBD(**train_args), VOC(**train_args)],
+        'train': [NYU(**train_args)] * (2 if model_type == 'full' else 3),
+        'val':
+            NYU(**eval_args),
+        'stage_epochs':
+            ([250, 250] if model_type == 'full' else [100, 100, 100]),
+        'stage_gammas':
+            ([0.1, 0.1] if model_type == 'full' else [0.5, 0.5, 0.5])
+    } if dataset_name == 'nyu' else {
+        'train':
+            [COCODataset(**train_args),
+             SBD(**train_args),
+             VOC(**train_args)],
         'val': [VOC(**eval_args)],
         'stage_epochs': [20, 50, 200],
-        'stage_gammas': ([0.1 if model_type == RefineNet.MODEL_TYPES[0] else 0.5] * 3)
+        'stage_gammas': ([0.1 if model_type == 'full' else 0.5] * 3)
     })
 
 

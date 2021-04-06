@@ -4,18 +4,20 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from .blocks import *
-from .helpers import download_model, find_snapshot
+from .helpers import download_model, num_classes_from_weights
 from ..helpers import compute_cm, compute_iu
 
 
 class RefineNet(nn.Module):
-    def __init__(self, block, layers, num_classes=21):
+
+    def __init__(self, block, layers, num_layers=50, num_classes=21):
         super(RefineNet, self).__init__()
 
         # check for cuda availability
         self.cuda_available = True if torch.cuda.is_available() else False
 
         # general params
+        self.num_layers = num_layers
         self.num_classes = num_classes
         self.inplanes = 64
 
@@ -254,10 +256,15 @@ class RefineNet(nn.Module):
     def save(self, global_iteration, log_directory):
         os.makedirs(os.path.join(log_directory, 'snapshots'), exist_ok=True)
         model = {
-            'model': self.state_dict(),
             'enc_optimiser': self.enc_optimiser.state_dict(),
             'dec_optimiser': self.dec_optimiser.state_dict(),
-            'global_iteration': global_iteration
+            'global_iteration': global_iteration,
+            'model_metadata': {
+                'type': 'full',
+                'num_layers': self.num_layers,
+                'num_classes': self.num_classes
+            },
+            'weights': self.state_dict(),
         }
 
         model_path = os.path.join(
@@ -265,34 +272,6 @@ class RefineNet(nn.Module):
             'model-{:06d}.pth.tar'.format(global_iteration))
         print('Creating Snapshot: ' + model_path)
         torch.save(model, model_path)
-
-    def load(self, log_directory=None, snapshot_num=None, with_optim=True):
-        snapshot_dir = os.path.join(log_directory, 'snapshots')
-        model_name = find_snapshot(snapshot_dir, snapshot_num)
-
-        if model_name is None:
-            print(
-                'Model not found: initialising using default PyTorch initialisation!'
-            )
-            # uses pytorch default initialisation
-            return 0
-        # load model if snapshot was found
-        else:
-            full_model = torch.load(os.path.join(snapshot_dir, model_name))
-            print('Loading model from: ' +
-                  os.path.join(snapshot_dir, model_name))
-            self.load_state_dict(full_model['model'], strict=False)
-            if with_optim:
-                self.enc_optimiser.load_state_dict(full_model['enc_optimiser'])
-                self.dec_optimiser.load_state_dict(full_model['dec_optimiser'])
-                # move optimiser to cuda
-                if self.cuda_available:
-                    for state in self.optimiser.state.values():
-                        for k, v in state.items():
-                            if isinstance(v, torch.Tensor):
-                                state[k] = v.cuda()
-            curr_iteration = full_model['global_iteration']
-            return curr_iteration
 
 
 imagenet_urls = {
@@ -303,117 +282,68 @@ imagenet_urls = {
 
 pretrained_urls = {
     'refinenet50_nyu':
-    'https://cloudstor.aarnet.edu.au/plus/s/thgUqW2uRZBeEXG/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/thgUqW2uRZBeEXG/download',
     'refinenet101_nyu':
-    'https://cloudstor.aarnet.edu.au/plus/s/9wPfvg6eKqTztNy/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/9wPfvg6eKqTztNy/download',
     'refinenet152_nyu':
-    'https://cloudstor.aarnet.edu.au/plus/s/QFcL2qgNsnpSOlr/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/QFcL2qgNsnpSOlr/download',
     'refinenet50_voc':
-    'https://cloudstor.aarnet.edu.au/plus/s/YH73jIiBa8iKllX/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/YH73jIiBa8iKllX/download',
     'refinenet101_voc':
-    'https://cloudstor.aarnet.edu.au/plus/s/rzgoGwTb6CK7nbT/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/rzgoGwTb6CK7nbT/download',
     'refinenet152_voc':
-    'https://cloudstor.aarnet.edu.au/plus/s/fSsPeSsNyyHYTwC/download',
+        'https://cloudstor.aarnet.edu.au/plus/s/fSsPeSsNyyHYTwC/download',
 }
 
 
 # creates a ResNet-50 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet50(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 4, 6, 3],
-                      num_classes=num_classes,
+    return _refinenet(num_classes,
+                      50, [3, 4, 6, 3],
+                      pretrained=pretrained,
                       **kwargs)
-
-    # load model on device if available
-    map_location = None
-    if not model.cuda_available:
-        map_location = torch.device('cpu')
-
-    if pretrained == 'nyu':
-        key = 'refinenet50_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenet50_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    else:
-        key = 'resnet50'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    model.name = key
-    return model
 
 
 # creates a ResNet-101 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet101(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 4, 23, 3],
-                      num_classes=num_classes,
+    return _refinenet(num_classes,
+                      101, [3, 4, 23, 3],
+                      pretrained=pretrained,
                       **kwargs)
-
-    # load model on device if available
-    map_location = None
-    if not model.cuda_available:
-        map_location = torch.device('cpu')
-
-    if pretrained == 'nyu':
-        key = 'refinenet101_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenet101_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    else:
-        key = 'resnet101'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    model.name = key
-    return model
 
 
 # creates a ResNet-152 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet152(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNet(Bottleneck, [3, 8, 36, 3],
-                      num_classes=num_classes,
+    return _refinenet(num_classes,
+                      152, [3, 8, 36, 3],
+                      pretrained=pretrained,
                       **kwargs)
 
-    # load model on device if available
+
+def _refinenet(num_classes, num_resnet_layers, layers, pretrained, **kwargs):
+    # Load in an appropriate set of pre-trained weights, falling back to resnet
+    # if required
     map_location = None
-    if not model.cuda_available:
+    if not torch.cuda.is_available():
         map_location = torch.device('cpu')
 
-    if pretrained == 'nyu':
-        key = 'refinenet152_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenet152_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(
-            key, url, map_location=map_location)['model'],
-                              strict=False)
-    else:
-        key = 'resnet152'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
+    imagenet = pretrained not in ['nyu', 'voc']
+    key = ('resnet%d' % num_resnet_layers if imagenet else 'refinenet%d_%s' %
+           (num_resnet_layers, pretrained))
+    url = (imagenet_urls if imagenet else pretrained_urls)[key]
+    model = download_model(key, url, map_location=map_location)
+    weights = model if imagenet else model['model']
+
+    # Create & return a new RefineNet instance
+    if not imagenet and num_classes_from_weights(weights) != num_classes:
+        raise ValueError(
+            "Cannot use pre-trained weights for network with '%d' classes "
+            "when requesting a new network with '%d' classes" %
+            (num_classes_from_weights(weights), num_classes))
+    model = RefineNet(Bottleneck,
+                      layers,
+                      num_resnet_layers,
+                      num_classes=num_classes,
+                      **kwargs)
     model.name = key
     return model

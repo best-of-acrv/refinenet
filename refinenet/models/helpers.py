@@ -6,6 +6,8 @@ from ..helpers import cache_location
 
 
 def download_model(model_name, model_url, model_dir=None, map_location=None):
+    print("Fetching pre-trained model '%s' from:\n\t%s" %
+          (model_name, model_url))
     if model_dir is None:
         # Try use PyTorch's recommendations by default, otherwise fallback to
         # our package level cache
@@ -28,28 +30,5 @@ def download_model(model_name, model_url, model_dir=None, map_location=None):
     return torch.load(cached_file, map_location=map_location)
 
 
-def find_snapshot(snapshot_dir, snapshot_num=None):
-    found_snapshot = False
-    if os.path.exists(snapshot_dir):
-        print('Found snapshot directory!')
-        snapshots = sorted(os.listdir(snapshot_dir))
-        if snapshot_num is not None:
-            for snapshot in snapshots:
-                if str(snapshot_num) in snapshot:
-                    model_name = snapshot
-                    found_snapshot = True
-                    break
-        else:
-            model_name = snapshots[-1]
-            found_snapshot = True
-        if found_snapshot:
-            print('Found snapshot: Loading snapshot ' + model_name + '...')
-        else:
-            print('Snapshot number does not exist! Please choose from:')
-            print(snapshots)
-            exit()
-    else:
-        print('Did not find snapshot directory! Training from scratch...')
-        model_name = None
-
-    return model_name
+def num_classes_from_weights(weights):
+    return weights['clf_conv.weight'].shape[0]

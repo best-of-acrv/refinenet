@@ -4,18 +4,20 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from .blocks import *
-from .helpers import download_model, find_snapshot
+from .helpers import download_model
 from ..helpers import compute_cm, compute_iu
 
 
 class RefineNetLW(nn.Module):
-    def __init__(self, block, layers, num_classes=21):
+
+    def __init__(self, block, layers, num_layers=50, num_classes=21):
         super(RefineNetLW, self).__init__()
 
         # check for cuda availability
         self.cuda_available = True if torch.cuda.is_available() else False
 
         # general params
+        self.num_layers = 50
         self.num_classes = num_classes
         self.inplanes = 64
 
@@ -234,10 +236,15 @@ class RefineNetLW(nn.Module):
     def save(self, global_iteration, log_directory):
         os.makedirs(os.path.join(log_directory, 'snapshots'), exist_ok=True)
         model = {
-            'model': self.state_dict(),
             'enc_optimiser': self.enc_optimiser.state_dict(),
             'dec_optimiser': self.dec_optimiser.state_dict(),
-            'global_iteration': global_iteration
+            'global_iteration': global_iteration,
+            'model_metadata': {
+                'type': 'lightweight',
+                'num_layers': self.num_layers,
+                'num_classes': self.num_classes
+            },
+            'weights': self.state_dict(),
         }
 
         model_path = os.path.join(
@@ -245,33 +252,6 @@ class RefineNetLW(nn.Module):
             'model-{:06d}.pth.tar'.format(global_iteration))
         print('Creating Snapshot: ' + model_path)
         torch.save(model, model_path)
-
-    def load(self, log_directory=None, snapshot_num=None, with_optim=True):
-        snapshot_dir = os.path.join(log_directory, 'snapshots')
-        model_name = find_snapshot(snapshot_dir, snapshot_num)
-
-        if model_name is None:
-            print(
-                'Model not found: initialising using default PyTorch initialisation!'
-            )
-            # uses pytorch default initialisation
-            return 0
-        # load model if snapshot was found
-        else:
-            full_model = torch.load(os.path.join(snapshot_dir, model_name))
-            print('Loading model from: ' +
-                  os.path.join(snapshot_dir, model_name))
-            self.load_state_dict(full_model['model'], strict=False)
-            if with_optim:
-                self.optimiser.load_state_dict(full_model['optimiser'])
-                # move optimiser to cuda
-                if self.cuda_available:
-                    for state in self.optimiser.state.values():
-                        for k, v in state.items():
-                            if isinstance(v, torch.Tensor):
-                                state[k] = v.cuda()
-            curr_iteration = full_model['global_iteration']
-            return curr_iteration
 
 
 imagenet_urls = {
@@ -282,17 +262,17 @@ imagenet_urls = {
 
 pretrained_urls = {
     "refinenetlw50_nyu":
-    "https://cloudstor.aarnet.edu.au/plus/s/gE8dnQmHr9svpfu/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/gE8dnQmHr9svpfu/download",
     "refinenetlw101_nyu":
-    "https://cloudstor.aarnet.edu.au/plus/s/VnsaSUHNZkuIqeB/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/VnsaSUHNZkuIqeB/download",
     "refinenetlw152_nyu":
-    "https://cloudstor.aarnet.edu.au/plus/s/EkPQzB2KtrrDnKf/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/EkPQzB2KtrrDnKf/download",
     "refinenetlw50_voc":
-    "https://cloudstor.aarnet.edu.au/plus/s/xp7GcVKC0GbxhTv/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/xp7GcVKC0GbxhTv/download",
     "refinenetlw101_voc":
-    "https://cloudstor.aarnet.edu.au/plus/s/CPRKWiaCIDRdOwF/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/CPRKWiaCIDRdOwF/download",
     "refinenetlw152_voc":
-    "https://cloudstor.aarnet.edu.au/plus/s/2w8bFOd45JtPqbD/download",
+        "https://cloudstor.aarnet.edu.au/plus/s/2w8bFOd45JtPqbD/download",
 }
 
 
