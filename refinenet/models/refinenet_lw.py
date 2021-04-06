@@ -4,7 +4,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from .blocks import *
-from .helpers import download_model
+from .helpers import download_model, num_classes_from_weights
 from ..helpers import compute_cm, compute_iu
 
 
@@ -278,107 +278,51 @@ pretrained_urls = {
 
 # creates a ResNet-50 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet_lw50(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNetLW(Bottleneck, [3, 4, 6, 3],
-                        num_classes=num_classes,
+    return _refinenetlw(num_classes,
+                        50, [3, 4, 6, 3],
+                        pretrained=pretrained,
                         **kwargs)
-
-    # load model on device if available
-    map_location = None
-    if not model.cuda_available:
-        map_location = torch.device('cpu')
-
-    if pretrained == 'nyu':
-        key = 'refinenetlw50_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenetlw50_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    else:
-        key = 'resnet50'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    model.name = key
-    return model
 
 
 # creates a ResNet-101 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet_lw101(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNetLW(Bottleneck, [3, 4, 23, 3],
-                        num_classes=num_classes,
+    return _refinenetlw(num_classes,
+                        101, [3, 4, 23, 3],
+                        pretrained=pretrained,
                         **kwargs)
-
-    # load model on device if available
-    map_location = None
-    if not model.cuda_available:
-        map_location = torch.device('cpu')
-
-    if pretrained == 'nyu':
-        key = 'refinenetlw101_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenetlw101_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    else:
-        key = 'resnet101'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    model.name = key
-    return model
 
 
 # creates a ResNet-152 RefineNet (supports loading of pretrained ImageNet model)
 def refinenet_lw152(num_classes, pretrained='imagenet', **kwargs):
-    model = RefineNetLW(Bottleneck, [3, 8, 36, 3],
-                        num_classes=num_classes,
+    return _refinenetlw(num_classes,
+                        152, [3, 8, 36, 3],
+                        pretrained=pretrained,
                         **kwargs)
 
-    # load model on device if available
+
+def _refinenetlw(num_classes, num_resnet_layers, layers, pretrained, **kwargs):
+    # Load in an appropriate set of pre-trained weights, falling back to resnet
+    # if required
     map_location = None
-    if not model.cuda_available:
+    if not torch.cuda.is_available():
         map_location = torch.device('cpu')
 
-    if pretrained == 'nyu':
-        key = 'refinenetlw152_nyu'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    elif pretrained == 'voc':
-        key = 'refinenetlw152_voc'
-        url = pretrained_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
-    else:
-        key = 'resnet152'
-        url = imagenet_urls[key]
-        model.load_state_dict(download_model(key,
-                                             url,
-                                             map_location=map_location),
-                              strict=False)
+    imagenet = pretrained not in ['nyu', 'voc']
+    key = ('resnet%d' % num_resnet_layers if imagenet else 'refinenetlw%d_%s' %
+           (num_resnet_layers, pretrained))
+    url = (imagenet_urls if imagenet else pretrained_urls)[key]
+    weights = download_model(key, url, map_location=map_location)
+
+    # Create & return a new RefineNet instance
+    if not imagenet and num_classes_from_weights(weights) != num_classes:
+        raise ValueError(
+            "Cannot use pre-trained weights for network with '%d' classes "
+            "when requesting a new network with '%d' classes" %
+            (num_classes_from_weights(weights), num_classes))
+    model = RefineNetLW(Bottleneck,
+                        layers,
+                        num_resnet_layers,
+                        num_classes=num_classes,
+                        **kwargs)
     model.name = key
     return model
