@@ -1,6 +1,7 @@
 import pkg_resources
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 _CACHE_LOCATION = '.cache'
 
@@ -70,7 +71,61 @@ def compute_iu(cm):
     return IU
 
 
+def forward_multi_scale(model, img):
+    # sample multi scale images
+    height = img.shape[-2]
+    width = img.shape[-1]
+
+    # scales
+    scales = [0.4, 0.6, 0.8, 1, 1.2]
+
+    # predict at multiple scales
+    predictions = []
+    for scale in scales:
+
+        # compute scaled height and width
+        scaled_height = int(scale * height)
+        scaled_width = int(scale * width)
+
+        # interpolate image to scale
+        scaled_img = F.interpolate(img, (scaled_height, scaled_width),
+                                   mode='bilinear')
+
+        # forward pass through
+        logits = model(scaled_img)
+
+        # interpolate logits back to original image size
+        prediction = F.softmax(logits, dim=1)
+        prediction = F.interpolate(prediction, (height, width),
+                                   mode='bilinear')
+        predictions.append(prediction)
+
+    prediction = torch.cat(predictions, dim=0)
+    prediction = torch.mean(prediction, dim=0)
+
+    # average across images
+    prediction = torch.argmax(prediction, dim=0)
+    prediction = torch.squeeze(prediction)
+
+    return prediction
+
+
+def forward_single_scale(model, img):
+    # forward pass through
+    logits = model(img)
+
+    # interpolate logits back to original image size
+    prediction = F.softmax(logits, dim=1)
+    prediction = F.interpolate(prediction, (img.shape[-2], img.shape[-1]),
+                               mode='bilinear')
+    prediction = torch.argmax(prediction, dim=1)
+    prediction = torch.squeeze(prediction)
+
+    return prediction
+
+
 class ColourMap(object):
+
     def __init__(self, N=256, normalised=False, dataset='voc'):
         dtype = 'float32' if normalised else 'uint8'
 
