@@ -1,5 +1,6 @@
 import acrv_datasets
 import os
+import numpy as np
 import PIL.Image as Image
 import re
 import torch
@@ -144,17 +145,17 @@ class RefineNet(object):
         cmap_preset = _sanitise_arg(colour_map_preset, 'colour_map_preset',
                                     RefineNet.COLORMAP_PRESETS)
         cmap_preset = RefineNet.COLORMAP_PRESETS[cmap_preset]
-        if (image and image_file):
+        if image is None and image_file is None:
             raise ValueError("Only one of 'image' or 'image_file' can be "
                              "used in a call, not both.")
-        elif not image and not image_file:
+        elif image is not None and image_file is not None:
             raise ValueError("Either 'image' or 'image_file' must be provided")
         if output_file:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         # Construct the input image
-        # TODO handle raw image input
-        img = Image.open(image_file).convert('RGB')
+        img = (np.array(Image.open(image_file).convert('RGB'))
+               if image_file else image)
         img = _get_transforms()[2](img)
 
         # Perform the forward pass
