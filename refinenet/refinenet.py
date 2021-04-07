@@ -143,6 +143,7 @@ class RefineNet(object):
         # Handle input arguments
         cmap_preset = _sanitise_arg(colour_map_preset, 'colour_map_preset',
                                     RefineNet.COLORMAP_PRESETS)
+        cmap_preset = RefineNet.COLORMAP_PRESETS[cmap_preset]
         if (image and image_file):
             raise ValueError("Only one of 'image' or 'image_file' can be "
                              "used in a call, not both.")
