@@ -101,6 +101,13 @@ class RefineNet(object):
         self.load_snapshot = load_snapshot
         self.load_snapshot_optimiser = load_snapshot_optimiser
 
+        # Try setting up GPU integration
+        os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_id)
+        torch.manual_seed(self.model_seed)
+        if not torch.cuda.is_available():
+            raise RuntimeWarning("PyTorch could not find CUDA, using CPU ...")
+
         # Load the model based on the specified parameters
         self.model = None
         if self.load_snapshot:
@@ -113,13 +120,6 @@ class RefineNet(object):
                                     self.num_resnet_layers,
                                     self.num_classes,
                                     pretrained=self.load_pretrained)
-
-        # Try setting up GPU integration
-        os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_id)
-        torch.manual_seed(self.model_seed)
-        if not torch.cuda.is_available():
-            raise RuntimeWarning("PyTorch could not find CUDA, using CPU ...")
         self.model.cuda()
 
     def eval(self,
