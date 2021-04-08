@@ -1,4 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import Extension, find_packages, setup
+from setuptools.command.install import install
+import subprocess
+
+import time
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,8 +16,8 @@ setup(name='refinenet',
       long_description_content_type='text/markdown',
       packages=find_packages(),
       install_requires=[
-          'acrv_datasets', 'numpy', 'pillow', 'scipy', 'six', 'torch',
-          'torchvision'
+          'acrv_datasets', 'numpy', 'pillow', 'pycocotools', 'scipy', 'six',
+          'torch', 'torchvision'
       ],
       classifiers=(
           "Programming Language :: Python :: 3",

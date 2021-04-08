@@ -6,7 +6,7 @@ import re
 import torch
 from torchvision import transforms
 
-# from .datasets.coco import COCODataset
+from .datasets.coco import COCODataset
 from .datasets.nyu import NYU
 from .datasets.sbd import SBD
 from .datasets.voc import VOC

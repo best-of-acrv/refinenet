@@ -5,11 +5,12 @@ import random
 import numpy as np
 from tqdm import trange
 from PIL import Image
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 from pycocotools import mask as cocomask
 from torch.utils.data import Dataset
-from data_utils.mappings import coco2voc
-from utils.cmap import ColourMap
+
+from .helpers import coco2voc
+from ..helpers import ColourMap
 
 
 class COCODataset(Dataset):
