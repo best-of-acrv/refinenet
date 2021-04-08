@@ -2,16 +2,25 @@ import os
 import torch
 import torch.nn as nn
 import numpy as np
-from utils.miou import compute_cm, compute_iu
+from PIL import Image
+import torch
+
+from .helpers import (compute_cm, compute_iu, forward_multi_scale,
+                      forward_single_scale)
 
 
 class Evaluator(nn.Module):
+    MIU_FILENAME = 'mean_iu.txt'
 
-    def __init__(self, args, multi_scale=False):
+    def __init__(self,
+                 multi_scale=False,
+                 output_directory='.',
+                 output_images=False):
         super().__init__()
 
-        self.sample_directory = args.save_directory
         self.multi_scale = multi_scale
+        self.output_directory = output_directory
+        self.output_images = output_images
 
     # sample images using specified snapshot model
     def sample(self, model, dataset):
@@ -21,16 +30,17 @@ class Evaluator(nn.Module):
                                                  shuffle=False,
                                                  num_workers=1)
 
-        # output directory
-        output_directory = os.path.join(self.sample_directory, 'output',
-                                        model.name)
-        os.makedirs(output_directory, exist_ok=True)
+        # Create the output directory for our images if required
+        output_directory = (os.path.join(self.output_directory, 'images')
+                            if self.output_images else None)
+        if output_directory is not None:
+            os.makedirs(output_directory, exist_ok=True)
 
         # set model to eval mode for inference
         model.eval()
         # sample images and generate prediction images
         with torch.no_grad():
-            for i, batch in enumerate(dataloader):
+            for batch in dataloader:
 
                 # retrieve required data from batch
                 name = batch['name']
@@ -39,10 +49,8 @@ class Evaluator(nn.Module):
                     img = img.cuda()
 
                 # predict using single or multi-scale images
-                if self.multi_scale:
-                    prediction = self.eval_multi_scale(model, img)
-                else:
-                    prediction = self.eval_single_scale(model, img)
+                prediction = (forward_multi_scale if self.multi_scale else
+                              forward_single_scale)(model, img)
 
                 # convert PyTorch tensor to ndarray
                 prediction = prediction.cpu().detach().numpy().astype(np.uint8)
@@ -51,10 +59,10 @@ class Evaluator(nn.Module):
                 prediction += dataset.label_offset
                 prediction = dataset.cmap.colourise(prediction)
 
-                # save prediction image
-                im = Image.fromarray(prediction)
-                output_file = os.path.join(output_directory, name[0] + '.png')
-                im.save(output_file)
+                # save prediction image if requested
+                if output_directory is not None:
+                    Image.fromarray(prediction).save(
+                        os.path.join(output_directory, '%s.png' % name[0]))
 
     def compute_miu(self, model, dataset):
         # create dataloader using dataset
@@ -73,7 +81,7 @@ class Evaluator(nn.Module):
         model.eval()
         # sample images and generate prediction images
         with torch.no_grad():
-            for i, batch in enumerate(dataloader):
+            for batch in dataloader:
 
                 # retrieve required data from batch
                 img = batch['data']
@@ -83,10 +91,8 @@ class Evaluator(nn.Module):
                     label = label.cuda()
 
                 # predict using single or multi-scale images
-                if self.multi_scale:
-                    prediction = self.eval_multi_scale(model, img)
-                else:
-                    prediction = self.eval_single_scale(model, img)
+                prediction = (forward_multi_scale if self.multi_scale else
+                              forward_single_scale)(model, img)
 
                 # compute IU
                 cm = compute_cm(label, prediction, dataset.num_classes,
@@ -100,5 +106,7 @@ class Evaluator(nn.Module):
             iu = compute_iu(full_cm)
             mean_iu = np.mean(iu)
 
-            with open(os.path.join(self.sample_directory, 'mean_iu.txt'),
-                      'a') as f:
+            with open(
+                    os.path.join(self.output_directory,
+                                 Evaluator.MIU_FILENAME), 'a') as f:
+                f.writelines(['Mean IU: ', str(mean_iu), '\n'])

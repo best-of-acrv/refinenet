@@ -10,6 +10,7 @@ from torchvision import transforms
 from .datasets.nyu import NYU
 from .datasets.sbd import SBD
 from .datasets.voc import VOC
+from .evaluator import Evaluator
 from .models import refinenet, refinenet_lw
 from .predictor import Predictor
 from .trainer import Trainer
@@ -126,13 +127,21 @@ class RefineNet(object):
              *,
              dataset_dir=None,
              multi_scale=False,
-             output_file=None):
+             output_directory='.',
+             output_images=False):
         # Perform argument validation
         dataset_name = _sanitise_arg(dataset_name, 'dataset_name',
                                      RefineNet.DATASETS)
 
         # Load in the dataset
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
+
+        # Perform the requested evaluation
+        e = Evaluator(multi_scale=multi_scale,
+                      output_directory=output_directory,
+                      output_images=output_images)
+        e.sample(self.model, dataset['val'])
+        e.compute_miu(self.model, dataset['val'])
 
     def predict(self,
                 *,
