@@ -4,14 +4,17 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='refinenet',
-      version='0.1.0',
+      version='0.9.0',
       author='Ben Talbot',
       author_email='b.talbot@qut.edu.au',
-      description='Refinenet semantic segmentation',
+      description='RefineNet semantic segmentation',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=find_packages(),
-      install_requires=['acrv_datasets'],
+      install_requires=[
+          'acrv_datasets', 'numpy', 'pillow', 'scipy', 'six', 'torch',
+          'torchvision'
+      ],
       classifiers=(
           "Programming Language :: Python :: 3",
           "License :: OSI Approved :: BSD License",

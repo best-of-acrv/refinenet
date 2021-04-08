@@ -1,9 +1,5 @@
-.idea
-runs
-.cache
-cocoapi
-data
-!data/*.sh
 *.pyc
 *.sw*
 *.egg-info/
+
+.cache
