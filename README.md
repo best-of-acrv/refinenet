@@ -8,6 +8,8 @@ This repository contains an open-source implementation of RefineNet in Python, w
 
 Our code is free to use, and licensed under BSD-3. We simply ask that you [cite our work](#citing-our-work) if you use RefineNet in your own research.
 
+[![RefineNet Results on the CityScapes Dataset](./docs/refinenet_video.jpg)](https://www.youtube.com/watch?v=L0V6zmGP_oQ)
+
 ## Related resources
 
 This repository brings the work from a number of sources together. Please see the links below for further details:
