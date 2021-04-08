@@ -15,54 +15,6 @@ from .models import refinenet, refinenet_lw
 from .predictor import Predictor
 from .trainer import Trainer
 
-# Param list from old mode:
-# SHARED MODE:
-# parser.add_argument('--batch_size', type=int, default=4, help='batch size to train the segmenter model.')
-# parser.add_argument('--num_workers', type=int, default=4, help='number of workers for PyTorch dataloader.')
-
-# # Model parameters
-# parser.add_argument('--num_resnet_layers', type=int, default=50, help='number of resnet layers in model [50, 101, 152]')
-
-# # Training parameters
-# parser.add_argument('--gpu', type=int, default=0, help='GPU id to use')
-# parser.add_argument('--learning_rate', type=float, default=5e-4, help='base learning rate')
-# parser.add_argument('--optimiser_type', type=str, default='sgd', help='optimiser type to use for training')
-# parser.add_argument('--display_interval', type=int, default=10, help='interval of displaying log to console (in iterations)')
-# parser.add_argument('--eval_interval', type=int, default=1, help='interval between evaluating on validation (in epochs)')
-# parser.add_argument('--snapshot_interval', type=int, default=5, help='interval between saving model snapshots (in epochs)')
-# parser.add_argument('--seed', type=int, default=42, help='random seed to use')
-#
-# TRAIN SCRIPT
-# parser.add_argument('--name', type=str, default='refinenet', help='custom prefix for naming model')
-# parser.add_argument('--dataset', type=str, default='voc', help='name of dataset: choose from [nyu, voc]')
-# parser.add_argument('--dataroot', type=str, default='../acrv-datasets/datasets/', help='root directory of data')
-# parser.add_argument('--model_type', type=str, default='refinenet', help='model type: choose from [refinenet, refinenetlw]')
-# parser.add_argument('--freeze_bn', type=bool, default=False, help='freeze bn params during training')
-# parser.add_argument('--save_directory', type=str, default='runs', help='save model directory')
-# parser.add_argument('--load_directory', type=str, default=None, help='load model directory')
-# parser.add_argument('--snapshot_num', type=int, default=None, help='snapshot number of model (if any)')
-#
-# EVAL SCRIPT
-# parser.add_argument('--name', type=str, default='refinenet', help='custom prefix for naming model')
-# parser.add_argument('--dataset', type=str, default='voc', help='name of dataset: choose from [nyu, voc]')
-# parser.add_argument('--dataroot', type=str, default='../acrv-datasets/datasets/', help='root directory of data')
-# parser.add_argument('--model_type', type=str, default='refinenet', help='type of model to use. Choose from: [refinenet, refinenetlw]')
-# parser.add_argument('--multi_scale_eval', type=bool, default=False, help='use multi-scale evaluation')
-# parser.add_argument('--save_directory', type=str, default='runs', help='save model directory')
-# parser.add_argument('--load_directory', type=str, default=None, help='load directory of model (if any)')
-# parser.add_argument('--snapshot_num', type=int, default=None, help='snapshot number of model in epochs (if any)')
-#
-# DEPLOY SCRIPT
-# parser.add_argument('--name', type=str, default='refinenet', help='custom prefix for naming model')
-# parser.add_argument('--dataset', type=str, default='nyu', help='name of dataset: choose from [nyu, voc]')
-# parser.add_argument('--dataroot', type=str, default='../acrv-datasets/datasets/', help='root directory of data')
-# parser.add_argument('--model_type', type=str, default='refinenet', help='type of model to use. Choose from: [refinenet, refinenetlw]')
-# parser.add_argument('--img_path', type=str, required=True, help='path to single image to evaluate model on')
-# parser.add_argument('--multi_scale_eval', type=bool, default=False, help='use multi-scale evaluation')
-# parser.add_argument('--save_directory', type=str, default='runs', help='save model directory')
-# parser.add_argument('--load_directory', type=str, default=None, help='load directory of model (if any)')
-# parser.add_argument('--snapshot_num', type=int, default=None, help='snapshot number of model in epochs (if any)')
-
 
 class RefineNet(object):
     # TODO should citiscapes, coco, sbd be in here???
