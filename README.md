@@ -1,4 +1,4 @@
-# RefineNet: high-resolution semantic image segmentation
+# RefineNet: high-res semantic image segmentation
 
 ![RefineNet sample image on PASCAL VOC dataset](./docs/refinenet_sample.png)
 
