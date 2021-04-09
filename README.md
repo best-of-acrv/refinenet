@@ -1,8 +1,10 @@
 # RefineNet: high-res semantic image segmentation
 
-![RefineNet sample image on PASCAL VOC dataset](./docs/refinenet_sample.png)
-
 RefineNet is a generic multi-path refinement network for high-resolution semantic image segmentation and general dense prediction tasks on images. It achieves high-resolution prediction by explicitly exploiting all the information available along the down-sampling process and using long-range residual connections.
+
+<p align="center">
+<img alt="RefineNet sample image on PASCAL VOC dataset" src="./docs/refinenet_sample.png" />
+</p>
 
 This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for training, evaluation, and deployment within systems. The package is easily installable with `conda`, and can also be installed via `pip` if you'd prefer to manually handle dependencies.
 
