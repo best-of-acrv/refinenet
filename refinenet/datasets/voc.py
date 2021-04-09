@@ -11,7 +11,7 @@ from ..helpers import ColourMap
 
 class VOC(Dataset):
     '''Pascal VOC Segmentation dataset.'''
-    COLOUR_MAP = ColourMap(dataset='cov')
+    COLOUR_MAP = ColourMap(dataset='voc')
     LABEL_OFFSET = 0
     NUM_CLASSES = 21
 
@@ -40,7 +40,7 @@ class VOC(Dataset):
                 os.path.join(
                     root_dir,
                     'VOCdevkit/VOC2012/ImageSets/Segmentation/trainval.txt'))
-        elif self.image_set == 'val':
+        elif self.image_set == 'val' or self.image_set == 'test':
             self.file_list = read_filelist(
                 os.path.join(
                     root_dir,

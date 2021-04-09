@@ -6,7 +6,7 @@ import re
 import torch
 from torchvision import transforms
 
-from .datasets.coco import COCODataset
+from .datasets.coco import COCO
 from .datasets.nyu import NYU
 from .datasets.sbd import SBD
 from .datasets.voc import VOC
@@ -279,10 +279,11 @@ def _load_dataset(dataset_name, dataset_dir, model_type, quiet=False):
     # Print some verbose information
     if not quiet:
         print("\nGETTING DATASET:")
-        if dataset_dir is None:
-            # TODO translate voc into all the required datasets (i.e. this
-            # should handle multiple dataset_dirs)
-            dataset_dir = acrv_datasets.get_datasets(dataset_name)
+    if dataset_dir is None:
+        # TODO translate voc into all the required datasets (i.e. this
+        # should handle multiple dataset_dirs)
+        dataset_dir = acrv_datasets.get_datasets(dataset_name)
+    if not quiet:
         print("Using 'dataset_dir': %s" % dataset_dir)
 
     # Get transformations
@@ -320,11 +321,11 @@ def _load_dataset(dataset_name, dataset_dir, model_type, quiet=False):
         'stage_gammas':
             ([0.1, 0.1] if model_type == 'full' else [0.5, 0.5, 0.5])
     } if dataset_name == 'nyu' else {
-        'train':
-            [COCODataset(**train_args),
-             SBD(**train_args),
-             VOC(**train_args)],
-        'val': [VOC(**eval_args)],
+        'train': [],
+        # [COCO(**train_args),
+        #  SBD(**train_args),
+        #  VOC(**train_args)],
+        'val': VOC(**eval_args),
         'stage_epochs': [20, 50, 200],
         'stage_gammas': ([0.1 if model_type == 'full' else 0.5] * 3)
     })

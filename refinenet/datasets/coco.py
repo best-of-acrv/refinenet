@@ -5,7 +5,7 @@ import random
 import numpy as np
 from tqdm import trange
 from PIL import Image
-# from pycocotools.coco import COCO
+from pycocotools import coco
 from pycocotools import mask as cocomask
 from torch.utils.data import Dataset
 
@@ -13,7 +13,7 @@ from .helpers import coco2voc
 from ..helpers import ColourMap
 
 
-class COCODataset(Dataset):
+class COCO(Dataset):
     '''Microsoft COCO Segmentation dataset.'''
     COLOUR_MAP = ColourMap(dataset='voc')
     LABEL_OFFSET = 0
@@ -44,7 +44,7 @@ class COCODataset(Dataset):
 
         # gets COCO to VOC classes mapping
         self.coco2voc = coco2voc()
-        self.coco = COCO(self.ann_file)
+        self.coco = coco.COCO(self.ann_file)
         self.categories = self.coco.loadCats(self.coco.getCatIds())
         self.img_ids = self.coco.getImgIds()
         self.catIds = self.coco.getCatIds()
