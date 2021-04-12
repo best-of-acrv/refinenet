@@ -20,6 +20,7 @@ setup(name='refinenet',
           'torch', 'torchvision'
       ],
       classifiers=(
+          "Development Status :: 4 - Beta",
           "Programming Language :: Python :: 3",
           "License :: OSI Approved :: BSD License",
           "Operating System :: OS Independent",
