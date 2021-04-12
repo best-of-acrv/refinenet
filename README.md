@@ -67,9 +67,9 @@ u@pc:~$ pip install -e .
 
 Editable mode allows you to immediately use any changes you make to RefineNet's code in your local Python ecosystem.
 
-TODO: add instructions for from source method that doesn't use pip (i.e. just running scripts)
-
 ## Using RefineNet
+
+Once installed, RefineNet can be used directly from the command line using Python
 
 TODO: add details for quickstart scripts that don't require you to write your own Python scripts
 
@@ -77,7 +77,11 @@ Once installed, RefineNet can be used like any other Python package. It consists
 
 ## RefineNet API
 
-TODO give this context
+The package also includes a full Python API that allows you to use RefineNet directly in your own projects.
+
+TODO documentation link
+
+The snippet below shows a number of examples of how to use RefineNet with your own projects:
 
 ```python
 from refinenet import RefineNet
@@ -85,23 +89,32 @@ from refinenet import RefineNet
 # Initialise a full RefineNet network with no pre-trained model
 r = RefineNet()
 
-# Initialise a lightweight RefineNet network with a pre-trained model
-r = RefineNet(model='lightweight', weights='/path/to/my_model')
+# Initialise a standard RefineNet network with a model pre-trained on NYU
+r = RefineNet(model_type='full', load_pretrained='nyu')
 
-# Initialise a lightweight RefineNet network with 50 layers
-r = RefineNet(model='lightweight', num_layers=50)
+# Initialise a lightweight RefineNet network with 40 classes
+r = RefineNet(model='lightweight', num_classes=40)
+
+# Load a previous snapshot from a 152 layer network
+r = RefineNet(load_snapshot='/path/to/snapshot', num_resnet_layers=152)
 
 # Train a new model on the NYU dataset with a custom learning rate
-r.train(dataset='nyu', learning_rate=0.0005)
+r.train('nyu', learning_rate=0.0005)
 
-# Get a segmentation image from a TODO opencv image
+# Train a model with the adam optimiser & 8 workers, saving output to ~/output
+r.train('voc', optimiser_type='adam', num_workers=8,
+        output_directory='~/output')
+
+# Get a predicted segmentation as a NumPy image, given an input NumPy image
 segmentation_image = r.predict(image=my_image)
 
-# Save a segmentation image to file, using an image from another image file
-r.predict(image_file='/my/image.jpg', output_file='/my/segmentation/image.jpg')
+# Save a segmentation image to file, given an image from another image file
+r.predict(image_file='/my/prediction.jpg',
+          output_file='/my/segmentation/image.jpg')
 
-# Evaluate your model's performance on the coco dataset, & save the results
-r.eval(dataset='coco', output_file='/my/results.json')
+# Evaluate your model's performance on the voc dataset, & save the results with
+# images
+r.eval('voc', output_directy='/my/results.json', output_images=True)
 ```
 
 ## Citing our work
