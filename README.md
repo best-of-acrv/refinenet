@@ -71,7 +71,7 @@ Editable mode allows you to immediately use any changes you make to RefineNet's 
 
 Once installed, RefineNet can be used directly from the command line using Python
 
-TODO: add details for quickstart scripts that don't require you to write your own Python scripts
+TODO: add details for quickstart scripts that run directly from the command line
 
 Once installed, RefineNet can be used like any other Python package. It consists of a `RefineNet` class with three main functions for training, evaluation, and deployment. Below are some examples to help get you started with RefineNet:
 
@@ -79,7 +79,7 @@ Once installed, RefineNet can be used like any other Python package. It consists
 
 The package also includes a full Python API that allows you to use RefineNet directly in your own projects.
 
-TODO documentation link
+TODO: documentation link?
 
 The snippet below shows a number of examples of how to use RefineNet with your own projects:
 
