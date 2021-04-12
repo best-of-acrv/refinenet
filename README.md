@@ -1,99 +1,143 @@
-# README #
+<p align=center><strong>~Please note this is only a <em>beta</em> release at this stage~</strong></p>
 
-This repository provides official models from the paper **RefineNet: Multi-Path Refinement Networks 
-for High-Resolution Semantic Segmentation**, which is available [here](https://arxiv.org/abs/1611.06612)
+# RefineNet: high-res semantic image segmentation
 
-> Lin, Guosheng, et al. 'Refinenet: Multi-path refinement networks for 
-> high-resolution semantic segmentation.' Proceedings of the IEEE conference on 
-> computer vision and pattern recognition. 2017.
+[![Best of ACRV Repository](https://img.shields.io/badge/collection-best--of--acrv-%23a31b2a)](https://roboticvision.org/best-of-acrv)
 
-Additionally, we also support the Lightweight-RefineNet models from the paper **Light-Weight RefineNet for Real-Time 
-Semantic Segmentation**, which is available [here](https://arxiv.org/abs/1810.03272)
+RefineNet is a generic multi-path refinement network for high-resolution semantic image segmentation and general dense prediction tasks on images. It achieves high-resolution prediction by explicitly exploiting all the information available along the down-sampling process and using long-range residual connections.
 
-> Nekrasov, Vladimir, Chunhua Shen, and Ian Reid. "Light-Weight RefineNet for 
-> Real-Time Semantic Segmentation." British Machine Vision Conference, 2018.
+<p align="center">
+<img alt="RefineNet sample image on PASCAL VOC dataset" src="https://github.com/best-of-acrv/refinenet/raw/develop/docs/refinenet_sample.png" />
+</p>
 
-This repository is designed to provide out-of-the-box functionality for evaluation and training of
-RefineNet and Light-Weight RefineNet models as specified in their respective papers, with as little overhead as possible. Models were adapted from
-the official [RefineNet](https://github.com/guosheng/refinenet) and [Light-Weight RefineNet](https://github.com/DrSleep/light-weight-refinenet).
+This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for training, evaluation, and deployment within systems. The package is easily installable with `conda`, and can also be installed via `pip` if you'd prefer to manually handle dependencies.
 
-## Setup ##
-Conda needs to be updated to the latest stable version: 
+Our code is free to use, and licensed under BSD-3. We simply ask that you [cite our work](#citing-our-work) if you use RefineNet in your own research.
+
+[![@youtube RefineNet Results on the CityScapes dataset](https://github.com/best-of-acrv/refinenet/raw/develop/docs/refinenet_video.jpg)](https://www.youtube.com/watch?v=L0V6zmGP_oQ)
+
+## Related resources
+
+This repository brings the work from a number of sources together. Please see the links below for further details:
+
+- our original paper: ["RefineNet: Multi-Path Refinement Networks for High-Resolution Semantic Segmentation"](#citing-our-work)
+- our paper introducing the lightweight version: ["Light-Weight RefineNet for Real-Time Semantic Segmentation"](#citing-out-work)
+- the original MATLAB implementation: [https://github.com/guosheng/refinenet](https://github.com/guosheng/refinenet)
+- Vladimir Nekrasov's PyTorch port of RefineNet: [https://github.com/DrSleep/refinenet-pytorch](https://github.com/DrSleep/refinenet-pytorch)
+- Vladimir Nekrasov's PyTorch port of lightweight RefineNet: [https://github.com/DrSleep/light-weight-refinenet](https://github.com/DrSleep/light-weight-refinenet)
+
+## Installing RefineNet
+
+We offer three methods for installing RefineNet:
+
+1. [Through our Conda package](#conda): single command installs everything including system dependencies (recommended)
+2. [Through our pip package](#pip): single command installs RefineNet and Python dependences, you take care of system dependencies
+3. [Directly from source](#from-source): allows easy editing and extension of our code, but you take care of building and all dependencies
+
+### Conda
+
+The only requirement is that you have [Conda installed](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) on your system, and are inside a [Conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html). From there, simply run:
+
 ```
-$ conda update conda
-$ conda update --all
-```
-
-From the root directory of this repository, to create the Conda environment to run code from this repository:
-```
-$ conda config --set channel_priority strict
-$ conda env create -f requirements.yml
-```
-
-This should set up the conda environment with all prerequisites for running this code. Activate this Conda
-environment using the following command:
-```
-$ conda activate pytorch-refinenet
-```
-
-
-### Install COCO API ### 
-Optional: clone and install the official COCO API Git Repository (if using the COCO dataset):
-```
-$ git clone https://github.com/cocodataset/cocoapi
-$ cd cocoapi/PythonAPI
-$ make
-$ python setup.py install
+u@pc:~$ conda install refinenet
 ```
 
-## Datasets ##
-For the datasets required for this project, please refer to the [Best-Of-ACRV repository](https://github.com/best-of-acrv/acrv-datasets). 
-Use this repository to download and prepare the NYU, VOC and COCO datasets required for this project. 
-The data directories should appear in the following structure:
+You can see a list of our Conda dependencies in the [`./requirements.yml`](./requirements.yml) file.
+
+### Pip
+
+Before installing via `pip`, you must have the following system dependencies installed:
+
+- CUDA
+- TODO the rest of this list
+
+Then RefineNet, and all its Python dependencies can be installed via:
+
 ```
-root_dir
-|--- deploy.py
-|--- eval.py
-|--- train.py
-acrv-datasets
-|--- datasets
-|------- coco
-|------- nyu
-|------- pascal_voc
-|------- sbd
+u@pc:~$ pip install refinenet
 ```
 
-## Evaluation ##
-To evaluate with one of the pretrained models, run ```eval.py```.
- 
-You can specifying the desired dataset (VOC, NYU or Citiscapes) and the desired model type (RefineNet or RefineNet-LW)
-For example, to evaluate on the NYUv2 dataset using a RefineNet-101 model and generate sample
-segmentation images, run the following command from the root directory:
+### From source
 
-```python eval.py --dataset=nyu --model_type=refinenet --num_resnet_layers=101```
+Installing from source is very similar to the `pip` method above due to RefineNet only containing Python code. Simply clone the repository, enter the directory, and install via `pip` in editable mode:
 
-Pretrained RefineNet models will be automatically downloaded and stored in the ```pretrained/models``` directory.
-Alternatively, if you wish to load your own pretrained model, you can do this by specifying a load directory (e.g.):
+```
+u@pc:~$ pip install -e .
+```
 
-```python eval.py --num_resnet_layers=50 --model_type=refinenetlw --load_directory=runs/mymodel```
+Editable mode allows you to immediately use any changes you make to RefineNet's code in your local Python ecosystem.
 
-Will load a Light-Weight RefineNet with a ResNet-50 backbone encoder, from the directory ``runs/mymodel``. We also support multi-scale evaluation as specified in the RefineNet paper. To enable multi-scale evaluation simply set
-the flag to ```True``` (e.g.):
+## Using RefineNet
 
-```python eval.py --dataset=nyu --num_resnet_layers=50 --model_type=refinenetlw --multi_scale_eval=True --load_directory=runs/mymodel```
+Once installed, RefineNet can be used directly from the command line using Python
 
-## Training ##
-To train your own RefineNet model, run ```train.py```. 
+TODO: add details for quickstart scripts that run directly from the command line
 
-Use ``--model_type`` to choose between RefineNet and Light-Weight RefineNet. By default to assist with training, models will be preloaded with ImageNet weights 
-for the backbone ResNet encoder. For example, to train on the NYUv2 dataset using a RefineNet-101 model, 
-run the following command from the root directory:
+Once installed, RefineNet can be used like any other Python package. It consists of a `RefineNet` class with three main functions for training, evaluation, and deployment. Below are some examples to help get you started with RefineNet:
 
-```python train.py --dataset=nyu --num_resnet_layers=101 --learning_rate=0.0005```
+## RefineNet API
 
-## Deploying ##
-For deploying a RefineNet model (sampling a single image for segmentation), run ```deploy.py```, e.g.:
+The package also includes a full Python API that allows you to use RefineNet directly in your own projects.
 
-```python deploy.py --dataset=nyu --num_resnet_layers=101 --img_path=path/to/image```
+TODO: documentation link?
 
+The snippet below shows a number of examples of how to use RefineNet with your own projects:
 
+```python
+from refinenet import RefineNet
+
+# Initialise a full RefineNet network with no pre-trained model
+r = RefineNet()
+
+# Initialise a standard RefineNet network with a model pre-trained on NYU
+r = RefineNet(model_type='full', load_pretrained='nyu')
+
+# Initialise a lightweight RefineNet network with 40 classes
+r = RefineNet(model='lightweight', num_classes=40)
+
+# Load a previous snapshot from a 152 layer network
+r = RefineNet(load_snapshot='/path/to/snapshot', num_resnet_layers=152)
+
+# Train a new model on the NYU dataset with a custom learning rate
+r.train('nyu', learning_rate=0.0005)
+
+# Train a model with the adam optimiser & 8 workers, saving output to ~/output
+r.train('voc', optimiser_type='adam', num_workers=8,
+        output_directory='~/output')
+
+# Get a predicted segmentation as a NumPy image, given an input NumPy image
+segmentation_image = r.predict(image=my_image)
+
+# Save a segmentation image to file, given an image from another image file
+r.predict(image_file='/my/prediction.jpg',
+          output_file='/my/segmentation/image.jpg')
+
+# Evaluate your model's performance on the voc dataset, & save the results with
+# images
+r.eval('voc', output_directy='/my/results.json', output_images=True)
+```
+
+## Citing our work
+
+If using RefineNet in your work, please cite [our original CVPR paper](https://openaccess.thecvf.com/content_cvpr_2017/papers/Lin_RefineNet_Multi-Path_Refinement_CVPR_2017_paper.pdf):
+
+```bibtex
+@InProceedings{Lin_2017_CVPR,
+author = {Lin, Guosheng and Milan, Anton and Shen, Chunhua and Reid, Ian},
+title = {RefineNet: Multi-Path Refinement Networks for High-Resolution Semantic Segmentation},
+booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+month = {July},
+year = {2017}
+}
+```
+
+Please also cite [our BMVC paper](http://bmvc2018.org/contents/papers/0494.pdf) on Light-Weight RefineNet if using the lightweight models:
+
+```bibtex
+@article{nekrasov2018light,
+  title={Light-weight refinenet for real-time semantic segmentation},
+  author={Nekrasov, Vladimir and Shen, Chunhua and Reid, Ian},
+  journal={arXiv preprint arXiv:1810.03272},
+  year={2018}
+}
+```

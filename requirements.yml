@@ -1,4 +1,4 @@
-name: pytorch-refinenet
+name: refinenet
 channels:
   - defaults
   - pytorch
@@ -17,4 +17,3 @@ dependencies:
   - PyYAML
   - pyzmq
   - opencv
-

@@ -1,7 +1,7 @@
-.idea
-runs
-pretrained
-cocoapi
-data
-!data/*.sh
 *.pyc
+*.sw*
+*.egg-info/
+
+.cache
+build/
+dist/
