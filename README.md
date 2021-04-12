@@ -1,4 +1,8 @@
+<p align=center><strong>~Please note this is only a <em>beta</em> release at this stage~</strong></p>
+
 # RefineNet: high-res semantic image segmentation
+
+[![Best of ACRV Repository](https://img.shields.io/badge/collection-best--of--acrv-%23a31b2a)](https://roboticvision.org/best-of-acrv)
 
 RefineNet is a generic multi-path refinement network for high-resolution semantic image segmentation and general dense prediction tasks on images. It achieves high-resolution prediction by explicitly exploiting all the information available along the down-sampling process and using long-range residual connections.
 
