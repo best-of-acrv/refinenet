@@ -2,7 +2,7 @@
 
 # RefineNet: high-res semantic image segmentation
 
-[![Best of ACRV Repository](https://img.shields.io/badge/collection-best--of--acrv-%23a31b2a)](https://roboticvision.org/best-of-acrv)
+[![Best of ACRV Repository](https://github.com/best-of-acrv/best-of-acrv-website/raw/master/misc/badge.svg)](https://roboticvision.org/best-of-acrv)
 
 RefineNet is a generic multi-path refinement network for high-resolution semantic image segmentation and general dense prediction tasks on images. It achieves high-resolution prediction by explicitly exploiting all the information available along the down-sampling process and using long-range residual connections.
 
@@ -59,13 +59,13 @@ u@pc:~$ pip install refinenet
 
 ### From source
 
-Installing from source is very similar to the `pip` method above due to RefineNet only containing Python code. Simply clone the repository, enter the directory, and install via `pip` in editable mode:
+Installing from source is very similar to the `pip` method above due to RefineNet only containing Python code. Simply clone the repository, enter the directory, and install via `pip`:
 
 ```
 u@pc:~$ pip install -e .
 ```
 
-Editable mode allows you to immediately use any changes you make to RefineNet's code in your local Python ecosystem.
+_Note: the editable mode flag (`-e`) is optional, but allows you to immediately use any changes you make to the code in your local Python ecosystem._
 
 ## Using RefineNet
 
