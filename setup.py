@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='refinenet',
-      version='0.9.1',
+      version='0.9.2',
       author='Ben Talbot',
       author_email='b.talbot@qut.edu.au',
       description='RefineNet semantic segmentation',
