@@ -19,6 +19,7 @@ setup(name='refinenet',
           'acrv_datasets', 'numpy', 'pillow', 'pycocotools', 'scipy', 'six',
           'torch', 'torchvision'
       ],
+      entry_points={'console_scripts': ['refinenet=refinenet.__main__:main']},
       classifiers=(
           "Development Status :: 4 - Beta",
           "Programming Language :: Python :: 3",
