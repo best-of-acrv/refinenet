@@ -114,7 +114,7 @@ r.predict(image_file='/my/prediction.jpg',
 
 # Evaluate your model's performance on the voc dataset, & save the results with
 # images
-r.eval('voc', output_directy='/my/results.json', output_images=True)
+r.evaluate('voc', output_directory='/my/results.json', output_images=True)
 ```
 
 ## Citing our work

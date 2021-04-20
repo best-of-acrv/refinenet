@@ -74,7 +74,7 @@ class RefineNet(object):
                                     pretrained=self.load_pretrained)
         self.model.cuda()
 
-    def eval(self,
+    def evaluate(self,
              dataset_name,
              *,
              dataset_dir=None,
