@@ -3,6 +3,8 @@ import shutil
 import sys
 import textwrap
 
+from .refinenet import RefineNet
+
 
 class ShowNewlines(argparse.ArgumentDefaultsHelpFormatter,
                    argparse.RawDescriptionHelpFormatter):
@@ -34,26 +36,59 @@ def main():
     p_parent.add_argument('--gpu-id',
                           default=0,
                           help="ID of GPU to use for model")
+    p_parent.add_argument('--model-type',
+                          default='full',
+                          choices=RefineNet.MODEL_TYPES,
+                          help="Whether to use a full or lightweight model")
+    p_parent.add_argument('--model-seed',
+                          default=0,
+                          help="Seed used for model training")
+    p_parent.add_argument(
+        '--num-classes',
+        default=21,
+        help="Number of object classes supported by the model")
+    p_parent.add_argument('--num-resnet-layers',
+                          default=50,
+                          choices=RefineNet.NUM_LAYERS,
+                          help="Number of layers for the resnet model")
+    p_parent.add_argument('--load-pretrained',
+                          default='imagenet',
+                          choices=RefineNet.PRETRAINED,
+                          help="Load these pre-trained weights in at startup")
+    p_parent.add_argument('--no-pretrained',
+                          default=False,
+                          action='store_true',
+                          help="Start with randomly initialised weights "
+                          "(overrides --load-pretrained). "
+                          "Note: (training will take a LONG time)")
+    p_parent.add_argument('--load-snapshot',
+                          default=None,
+                          help="Snapshot location from which to load weights "
+                          "(overrides --load-pretrained and --no-pretrained)")
+    p_parent.add_argument('--no-snapshot-optimiser',
+                          default=False,
+                          action='store_true',
+                          help="Don't load optimiser state when loading "
+                          "from a snapshot")
     sp = p.add_subparsers()
 
-    p_eval = sp.add_parser(
-        'evaluate',
-        parents=[p_parent],
-        formatter_class=ShowNewlines,
-        help="Evaluate a model's performance against a specific dataset")
-    p_eval.add_argument(
-        'dataset_name',
-        help="Name of the dataset to use (run "
-        "'acrv_datasets --supported-datasets' to see valid names)")
-    p_eval.add_argument(
-        '--dataset-dir',
-        default=None,
-        help="Search this directory for datasets instead of the current "
-        "default in 'acrv_datasets'")
-    p_eval.add_argument(
-        '--multi-scale',
-        default=False,
-        help="Generate predictions using multiple image scales")
+    p_eval = sp.add_parser('evaluate',
+                           parents=[p_parent],
+                           formatter_class=ShowNewlines,
+                           help="Evaluate a model's performance against a "
+                           "specific dataset")
+    p_eval.add_argument('dataset_name',
+                        help="Name of the dataset to use (run "
+                        "'acrv_datasets --supported-datasets' to see valid "
+                        "names)")
+    p_eval.add_argument('--dataset-dir',
+                        default=None,
+                        help="Search this directory for datasets instead "
+                        "of the current default in 'acrv_datasets'")
+    p_eval.add_argument('--multi-scale',
+                        default=False,
+                        action='store_true',
+                        help="Generate predictions from multiple image scales")
     p_eval.add_argument('--output-directory',
                         default='.',
                         help="Directory to save evaluation results")
