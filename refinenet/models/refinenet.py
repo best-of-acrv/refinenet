@@ -345,6 +345,6 @@ def _refinenet(num_classes, num_resnet_layers, layers, pretrained, **kwargs):
                       num_resnet_layers,
                       num_classes=num_classes,
                       **kwargs)
-    model.load_state_dict(weights)
+    model.load_state_dict(weights, strict=False)
     model.name = key
     return model

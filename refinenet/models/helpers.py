@@ -17,7 +17,7 @@ def download_model(model_name, model_url, model_dir=None, map_location=None):
                 os.path.expanduser(os.getenv('TORCH_HOME')), 'models')
         if model_dir is None:
             model_dir = os.path.join(cache_location(), 'pretrained')
-            print("Falling back to package cache for storing "
+            print("Falling back to package cache for locating cached "
                   "pretrained models:\n\t%s" % model_dir)
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
