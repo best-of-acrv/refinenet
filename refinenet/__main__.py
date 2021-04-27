@@ -69,7 +69,7 @@ def main():
                           action='store_true',
                           help="Don't load optimiser state when loading "
                           "from a snapshot")
-    sp = p.add_subparsers()
+    sp = p.add_subparsers(dest='mode')
 
     p_eval = sp.add_parser('evaluate',
                            parents=[p_parent],
@@ -96,6 +96,7 @@ def main():
                         help="Save prediction images as part of the results")
 
     p_pred = sp.add_parser('predict',
+                           parents=[p_parent],
                            formatter_class=ShowNewlines,
                            help="Use a model to predict image segmentation "
                            "from a given input image")
@@ -113,6 +114,7 @@ def main():
                         help="Filename used for saving the output image")
 
     p_train = sp.add_parser('train',
+                            parents=[p_parent],
                             formatter_class=ShowNewlines,
                             help="Train a model from a previous starting "
                             "point using a specific dataset")
