@@ -166,7 +166,43 @@ def main():
         return
 
     # Run requested RefineNet operations
-    print(args)
+    r = RefineNet(gpu_id=args.gpu_id,
+                  model_type=args.model_type,
+                  model_seed=args.model_seed,
+                  num_classes=args.num_classes,
+                  num_resnet_layers=args.num_resnet_layers,
+                  load_pretrained=args.load_pretrained,
+                  load_snapshot=args.load_snapshot,
+                  load_snapshot_optimiser=not args.no_snapshot_optimiser)
+    if args.mode == 'evaluate':
+        r.evaluate(args.dataset_name,
+                   dataset_dir=args.dataset_dir,
+                   multi_scale=args.multi_scale,
+                   output_directory=args.output_directory,
+                   output_images=args.output_images)
+    elif args.mode == 'predict':
+        r.predict(
+            colour_map_preset=args.colour_map,
+            image_file=args.image_file,
+            multi_scale=args.multi_scale,
+            output_file=args.output_file,
+        )
+    elif args.mode == 'train':
+        r.train(
+            args.dataset_name,
+            batch_size=args.batch_size,
+            dataset_dir=args.dataset_dir,
+            display_interval=args.display_interval,
+            eval_interval=args.eval_interval,
+            freeze_batch_normal=args.freeze_batch_normal,
+            learning_rate=args.learning_rate,
+            num_workers=args.num_workers,
+            optimiser_type=args.optimiser_type,
+            output_directory=args.output_directory,
+            snapshot_interval=args.snapshot_interval,
+        )
+    else:
+        raise ValueError("Unsupported mode: %s" % args.mode)
 
 
 if __name__ == '__main__':
