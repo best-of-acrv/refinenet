@@ -129,8 +129,12 @@ def main():
                          "of the current default in 'acrv_datasets'")
     p_train.add_argument('--display-interval',
                          default=10,
-                         help="TODOBatch size to use for training")
-    p_train.add_argument('--eval-interval', default=1, help="TODO")
+                         help="Frequency with which to display training "
+                         "progress (in # of iterations)")
+    p_train.add_argument('--eval-interval',
+                         default=1,
+                         help="Frequency with which to evaluate trained model "
+                         "(in # of epochs)")
     p_train.add_argument('--freeze-batch-normal', default=False, help="TODO")
     p_train.add_argument('--learning-rate',
                          default=5e-4,
@@ -141,12 +145,16 @@ def main():
     p_train.add_argument('--optimiser-type',
                          default='sqd',
                          choices=RefineNet.OPTIMISER_TYPES,
-                         help="Type of optimiser to use ")
+                         help="Type of optimiser to use for encoding and "
+                         "decoding")
     p_train.add_argument('--output-directory',
                          default=os.path.expanduser('~/refinenet-output'),
                          help="Location where snapshots and training progress "
                          "will be stored")
-    p_train.add_argument('--snapshot-interval', default=5, help="TODO")
+    p_train.add_argument('--snapshot-interval',
+                         default=5,
+                         help="Frequency with which to save model snapshots "
+                         "(in # of epochs)")
 
     args = p.parse_args()
 
