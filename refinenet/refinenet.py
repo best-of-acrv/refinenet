@@ -168,6 +168,7 @@ class RefineNet(object):
                                   learning_rate)
             if self.model.cuda_available:
                 self.model.cuda()
+            print("\tDone.")
 
         # Start a model trainer
         print("\nPERFORMING TRAINING:")
