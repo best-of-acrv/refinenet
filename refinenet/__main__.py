@@ -1,5 +1,5 @@
 import argparse
-import shutil
+import os
 import sys
 import textwrap
 
@@ -21,7 +21,6 @@ class ShowNewlines(argparse.ArgumentDefaultsHelpFormatter,
 
 def main():
     # Parse command line arguments
-    w = shutil.get_terminal_size().columns
     p = argparse.ArgumentParser(
         prog='refinenet',
         formatter_class=ShowNewlines,
@@ -100,11 +99,54 @@ def main():
                            formatter_class=ShowNewlines,
                            help="Use a model to predict image segmentation "
                            "from a given input image")
+    p_pred.add_argument('image_file', help="Filename for input image")
+    p_pred.add_argument('--colour-map',
+                        default='nyu',
+                        choices=RefineNet.COLORMAP_PRESETS,
+                        help="Colour map to use for prediction output")
+    p_pred.add_argument('--multi-scale',
+                        default=False,
+                        action='store_true',
+                        help="Generate predictions from multiple image scales")
+    p_pred.add_argument('--output-file',
+                        default='./output.jpg',
+                        help="Filename used for saving the output image")
 
     p_train = sp.add_parser('train',
                             formatter_class=ShowNewlines,
                             help="Train a model from a previous starting "
                             "point using a specific dataset")
+    p_train.add_argument('dataset_name',
+                         help="Name of the dataset to use (run "
+                         "'acrv_datasets --supported-datasets' to see valid "
+                         "names)")
+    p_train.add_argument('--batch-size',
+                         default=4,
+                         help="Batch size to use for training")
+    p_train.add_argument('--dataset-dir',
+                         default=None,
+                         help="Search this directory for datasets instead "
+                         "of the current default in 'acrv_datasets'")
+    p_train.add_argument('--display-interval',
+                         default=10,
+                         help="TODOBatch size to use for training")
+    p_train.add_argument('--eval-interval', default=1, help="TODO")
+    p_train.add_argument('--freeze-batch-normal', default=False, help="TODO")
+    p_train.add_argument('--learning-rate',
+                         default=5e-4,
+                         help="Learning rate for model while training")
+    p_train.add_argument('--num-workers',
+                         default=4,
+                         help="Number of workers to use while training")
+    p_train.add_argument('--optimiser-type',
+                         default='sqd',
+                         choices=RefineNet.OPTIMISER_TYPES,
+                         help="Type of optimiser to use ")
+    p_train.add_argument('--output-directory',
+                         default=os.path.expanduser('~/refinenet-output'),
+                         help="Location where snapshots and training progress "
+                         "will be stored")
+    p_train.add_argument('--snapshot-interval', default=5, help="TODO")
 
     args = p.parse_args()
 
