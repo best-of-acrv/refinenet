@@ -34,6 +34,7 @@ def main():
     p_parent = argparse.ArgumentParser(add_help=False)
     p_parent.add_argument('--gpu-id',
                           default=0,
+                          type=int,
                           help="ID of GPU to use for model")
     p_parent.add_argument('--model-type',
                           default='full',
@@ -41,13 +42,16 @@ def main():
                           help="Whether to use a full or lightweight model")
     p_parent.add_argument('--model-seed',
                           default=0,
+                          type=int,
                           help="Seed used for model training")
     p_parent.add_argument(
         '--num-classes',
         default=21,
+        type=int,
         help="Number of object classes supported by the model")
     p_parent.add_argument('--num-resnet-layers',
                           default=50,
+                          type=int,
                           choices=RefineNet.NUM_LAYERS,
                           help="Number of layers for the resnet model")
     p_parent.add_argument('--load-pretrained',
@@ -124,6 +128,7 @@ def main():
                          "names)")
     p_train.add_argument('--batch-size',
                          default=4,
+                         type=int,
                          help="Batch size to use for training")
     p_train.add_argument('--dataset-dir',
                          default=None,
@@ -131,21 +136,25 @@ def main():
                          "of the current default in 'acrv_datasets'")
     p_train.add_argument('--display-interval',
                          default=10,
+                         type=int,
                          help="Frequency with which to display training "
                          "progress (in # of iterations)")
     p_train.add_argument('--eval-interval',
                          default=1,
+                         type=int,
                          help="Frequency with which to evaluate trained model "
                          "(in # of epochs)")
     p_train.add_argument('--freeze-batch-normal', default=False, help="TODO")
     p_train.add_argument('--learning-rate',
                          default=5e-4,
+                         type=float,
                          help="Learning rate for model while training")
     p_train.add_argument('--num-workers',
                          default=4,
+                         type=int,
                          help="Number of workers to use while training")
     p_train.add_argument('--optimiser-type',
-                         default='sqd',
+                         default='sgd',
                          choices=RefineNet.OPTIMISER_TYPES,
                          help="Type of optimiser to use for encoding and "
                          "decoding")
@@ -155,6 +164,7 @@ def main():
                          "will be stored")
     p_train.add_argument('--snapshot-interval',
                          default=5,
+                         type=int,
                          help="Frequency with which to save model snapshots "
                          "(in # of epochs)")
 
@@ -166,6 +176,7 @@ def main():
         return
 
     # Run requested RefineNet operations
+    print(args)
     r = RefineNet(gpu_id=args.gpu_id,
                   model_type=args.model_type,
                   model_seed=args.model_seed,
