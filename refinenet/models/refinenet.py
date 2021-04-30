@@ -286,7 +286,8 @@ class RefineNet(nn.Module):
 
         model_path = os.path.join(
             log_directory, 'snapshots',
-            'model-{:06d}.pth.tar'.format(global_iteration))
+            '{}-{}-{:06d}.pth.tar'.format(model['model_metadata']['type'],
+                                          self.name, global_iteration))
         print('Creating Snapshot: ' + model_path)
         torch.save(model, model_path)
 

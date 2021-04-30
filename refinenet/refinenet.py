@@ -237,7 +237,7 @@ def _from_snapshot(snapshot_filename, load_optim_state=True):
     model = RefineNet.MODEL_MAP[model_type][_sanitise_arg(
         md['num_layers'], 'model_metadata.num_layers',
         RefineNet.NUM_LAYERS)](num_classes=md['num_classes'], pretrained=None)
-    model.name = snapshot_filename
+    model.name = 'snapshot_%s' % os.path.basename(snapshot_filename)
     _attach_new_optimiser(
         model, model_type,
         _sanitise_arg(md['optimiser_type'], 'model_metadata.optimiser_type',
