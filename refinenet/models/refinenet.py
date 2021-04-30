@@ -13,7 +13,13 @@ class RefineNet(nn.Module):
     def __init__(self, block, layers, num_layers=50, num_classes=21):
         super(RefineNet, self).__init__()
 
-        # check for cuda availability
+        # Optimiser parameters
+        self.optimiser_type = None
+        self.learning_rate = None
+        self.enc_optimiser = None
+        self.dec_optimiser = None
+
+        # check for cuda availiability
         self.cuda_available = True if torch.cuda.is_available() else False
 
         # general params
@@ -256,15 +262,26 @@ class RefineNet(nn.Module):
     def save(self, global_iteration, log_directory):
         os.makedirs(os.path.join(log_directory, 'snapshots'), exist_ok=True)
         model = {
-            'enc_optimiser': self.enc_optimiser.state_dict(),
-            'dec_optimiser': self.dec_optimiser.state_dict(),
-            'global_iteration': global_iteration,
+            **({} if self.enc_optimiser is None or self.dec_optimiser is None else {
+                   'enc_optimiser': self.enc_optimiser.state_dict(),
+                   'dec_optimiser': self.dec_optimiser.state_dict(),
+               }),
+            'global_iteration':
+                global_iteration,
             'model_metadata': {
-                'type': 'full',
-                'num_layers': self.num_layers,
-                'num_classes': self.num_classes
+                'type':
+                    'full',
+                'num_layers':
+                    self.num_layers,
+                'num_classes':
+                    self.num_classes,
+                **({} if self.optimiser_type is None else {
+                       'optimiser_type': self.optimiser_type,
+                       'learning_rate': self.learning_rate
+                   })
             },
-            'weights': self.state_dict(),
+            'weights':
+                self.state_dict(),
         }
 
         model_path = os.path.join(
@@ -321,30 +338,32 @@ def refinenet152(num_classes, pretrained='imagenet', **kwargs):
 
 
 def _refinenet(num_classes, num_resnet_layers, layers, pretrained, **kwargs):
-    # Load in an appropriate set of pre-trained weights, falling back to resnet
-    # if required
+    # Create a fresh model with optimisers
     map_location = None
     if not torch.cuda.is_available():
         map_location = torch.device('cpu')
-
-    imagenet = pretrained not in ['nyu', 'voc']
-    key = ('resnet%d' % num_resnet_layers if imagenet else 'refinenet%d_%s' %
-           (num_resnet_layers, pretrained))
-    url = (imagenet_urls if imagenet else pretrained_urls)[key]
-    model = download_model(key, url, map_location=map_location)
-    weights = model if imagenet else model['model']
-
-    # Create & return a new RefineNet instance
-    if not imagenet and num_classes_from_weights(weights) != num_classes:
-        raise ValueError(
-            "Cannot use pre-trained weights for network with '%d' classes "
-            "when requesting a new network with '%d' classes" %
-            (num_classes_from_weights(weights), num_classes))
     model = RefineNet(Bottleneck,
                       layers,
                       num_resnet_layers,
                       num_classes=num_classes,
                       **kwargs)
-    model.load_state_dict(weights, strict=False)
-    model.name = key
+
+    # Load in an appropriate configuration if pretrained is requested
+    if pretrained is not None:
+        imagenet = pretrained not in ['nyu', 'voc']
+        key = ('resnet%d' %
+               num_resnet_layers if imagenet else 'refinenet%d_%s' %
+               (num_resnet_layers, pretrained))
+        url = (imagenet_urls if imagenet else pretrained_urls)[key]
+        m = download_model(key, url, map_location=map_location)
+        weights = m if imagenet else m['model']
+
+        # Attach state to the model, and update name
+        if not imagenet and num_classes_from_weights(weights) != num_classes:
+            raise ValueError(
+                "Cannot use pre-trained weights for network with '%d' classes "
+                "when requesting a new network with '%d' classes" %
+                (num_classes_from_weights(weights), num_classes))
+        model.load_state_dict(weights, strict=False)
+        model.name = key
     return model
