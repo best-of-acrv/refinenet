@@ -84,7 +84,7 @@ We also include scripts in the `./scripts` directory to support running RefineNe
 
 ## Using RefineNet
 
-RefineNet can be used either entirely from the command line, or through its Python API.
+RefineNet can be used either entirely from the command line, or through its Python API. Both call the same underlying implementation, and as such offer equivalent functionality. We provide both options to facilitate use across a wide range of applications. See below for details of each method.
 
 ### RefineNet from the command line
 
