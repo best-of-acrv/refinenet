@@ -3,6 +3,12 @@
 # RefineNet: high-res semantic image segmentation
 
 [![Best of ACRV Repository](https://img.shields.io/badge/collection-best--of--acrv-%23a31b2a)](https://roboticvision.org/best-of-acrv)
+![Primary language](https://img.shields.io/github/languages/top/best-of-acrv/refinenet)
+[![PyPI package](https://img.shields.io/pypi/pyversions/refinenet)](https://pypi.org/project/refinenet/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/refinenet.svg)](https://anaconda.org/conda-forge/refinenet)
+[![Conda Recipe](https://img.shields.io/badge/recipe-refinenet-green.svg)](https://anaconda.org/conda-forge/refinenet)
+[![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/refinenet.svg)](https://anaconda.org/conda-forge/refinenet)
+[![License](https://img.shields.io/github/license/best-of-acrv/refinenet)](./LICENSE.txt)
 
 RefineNet is a generic multi-path refinement network for high-resolution semantic image segmentation and general dense prediction tasks on images. It achieves high-resolution prediction by explicitly exploiting all the information available along the down-sampling process and using long-range residual connections.
 
