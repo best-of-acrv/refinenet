@@ -22,11 +22,23 @@ class RefineNet(object):
     # TODO citiscapes should be in these lists!!!
     DATASETS = ['nyu', 'voc']
     DATASET_NUM_CLASSES = {'nyu': NYU.NUM_CLASSES, 'voc': VOC.NUM_CLASSES}
-
     MODEL_TYPES = ['full', 'lightweight']
     NUM_LAYERS = [50, 101, 152]
     OPTIMISER_TYPES = ['adam', 'sgd']
     PRETRAINED = ['imagenet', 'nyu', 'voc']
+
+    MODEL_MAP = {
+        MODEL_TYPES[0]: {
+            50: refinenet.refinenet50,
+            101: refinenet.refinenet101,
+            152: refinenet.refinenet152
+        },
+        MODEL_TYPES[1]: {
+            50: refinenet_lw.refinenet_lw50,
+            101: refinenet_lw.refinenet_lw101,
+            152: refinenet_lw.refinenet_lw152
+        }
+    }
 
     def __init__(self,
                  *,
@@ -74,13 +86,13 @@ class RefineNet(object):
                                     pretrained=self.load_pretrained)
         self.model.cuda()
 
-    def eval(self,
-             dataset_name,
-             *,
-             dataset_dir=None,
-             multi_scale=False,
-             output_directory='.',
-             output_images=False):
+    def evaluate(self,
+                 dataset_name,
+                 *,
+                 dataset_dir=None,
+                 multi_scale=False,
+                 output_directory='.',
+                 output_images=False):
         # Perform argument validation
         dataset_name = _sanitise_arg(dataset_name, 'dataset_name',
                                      RefineNet.DATASETS)
@@ -161,13 +173,14 @@ class RefineNet(object):
         dataset = _load_dataset(dataset_name, dataset_dir, self.model_type)
 
         # Attach new optimiser if required (and resend to GPU???)
-        if (not hasattr(self.model, 'enc_optimiser') or
-                not hasattr(self.model, 'dec_optimiser')):
+        if (self.model.enc_optimiser is None or
+                self.model.dec_optimiser is None):
             print("\nATTACHING NEW OPTIMISERS:")
             _attach_new_optimiser(self.model, self.model_type, optimiser_type,
                                   learning_rate)
             if self.model.cuda_available:
                 self.model.cuda()
+            print("\tDone.")
 
         # Start a model trainer
         print("\nPERFORMING TRAINING:")
@@ -209,45 +222,50 @@ def _attach_new_optimiser(model, model_type, optimiser_type, learning_rate):
             learning_rate),
         params=dec_params,
         **opt_params)
+    model.optimiser_type = optimiser_type
+    model.learning_rate = learning_rate
 
 
-def _from_snapshot(snapshot_filename, with_optim=True):
+def _from_snapshot(snapshot_filename, load_optim_state=True):
     print('Loading model from:\n\t%s' % snapshot_filename)
-    full_model = torch.load(snapshot_filename)
+    model_data = torch.load(snapshot_filename)
 
-    # Determine what class to load
+    # Create a new model with settings that match the snapshot
+    md = model_data['model_metadata']
+    model_type = _sanitise_arg(md['type'], 'model_metadata.type',
+                               RefineNet.MODEL_TYPES)
+    model = RefineNet.MODEL_MAP[model_type][_sanitise_arg(
+        md['num_layers'], 'model_metadata.num_layers',
+        RefineNet.NUM_LAYERS)](num_classes=md['num_classes'], pretrained=None)
+    model.name = 'snapshot_%s' % os.path.basename(snapshot_filename)
+    _attach_new_optimiser(
+        model, model_type,
+        _sanitise_arg(md['optimiser_type'], 'model_metadata.optimiser_type',
+                      RefineNet.OPTIMISER_TYPES), md['learning_rate'])
 
-    # self.load_state_dict(full_model['model'], strict=False)
-    # if with_optim:
-    #     self.enc_optimiser.load_state_dict(full_model['enc_optimiser'])
-    #     self.dec_optimiser.load_state_dict(full_model['dec_optimiser'])
-    #     # move optimiser to cuda
-    #     if self.cuda_available:
-    #         for state in self.optimiser.state.values():
-    #             for k, v in state.items():
-    #                 if isinstance(v, torch.Tensor):
-    #                     state[k] = v.cuda()
-    curr_iteration = full_model['global_iteration']
-    return curr_iteration
+    # Load requested state from the snapshot (moving to CUDA where appropriate)
+    model.load_state_dict(model_data['weights'], strict=False)
+    if load_optim_state:
+        model.enc_optimiser.load_state_dict(model_data['enc_optimiser'])
+        model.dec_optimiser.load_state_dict(model_data['dec_optimiser'])
+        if model.cuda_available:
+            for o in [model.enc_optimiser, model.dec_optimiser]:
+                for state in o.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.cuda()
+
+    # TODO should probably pass the current iteration back somehow
+    # curr_iteration = model_data['global_iteration']
+    return model
 
 
 def _get_model(model_type,
                num_resnet_layers,
                num_classes,
                pretrained='imagenet'):
-    return {
-        RefineNet.MODEL_TYPES[0]: {
-            50: refinenet.refinenet50,
-            101: refinenet.refinenet101,
-            152: refinenet.refinenet152
-        },
-        RefineNet.MODEL_TYPES[1]: {
-            50: refinenet_lw.refinenet_lw50,
-            101: refinenet_lw.refinenet_lw101,
-            152: refinenet_lw.refinenet_lw152
-        }
-    }[model_type][num_resnet_layers](num_classes=num_classes,
-                                     pretrained=pretrained)
+    return RefineNet.MODEL_MAP[model_type][num_resnet_layers](
+        num_classes=num_classes, pretrained=pretrained)
 
 
 def _get_transforms(crop_size=224, lower_scale=1.0, upper_scale=1.0):

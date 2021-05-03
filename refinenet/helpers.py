@@ -1,5 +1,5 @@
-import pkg_resources
 import numpy as np
+import pkg_resources
 import torch
 import torch.nn.functional as F
 
