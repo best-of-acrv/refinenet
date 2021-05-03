@@ -42,20 +42,27 @@ We offer three methods for installing RefineNet:
 
 ### Conda
 
-The only requirement is that you have [Conda installed](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) on your system, and are inside a [Conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html). From there, simply run:
+The only requirement is that you have [Conda installed](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) on your system, and [NVIDIA drivers installed](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&=Ubuntu&target_version=20.04&target_type=deb_network). We provide Conda packages through [Conda Forge](https://conda-forge.org/), which recommends adding their channel globally with strict priority:
+
+```
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+```
+
+Once you have access to the `conda-forge` channel, RefineNet is installed by running the following from inside a [Conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
 
 ```
 u@pc:~$ conda install refinenet
 ```
 
-You can see a list of our Conda dependencies in the [`./requirements.yml`](./requirements.yml) file.
+You can see a list of our Conda dependencies in the [RefineNet feedstock's recipe](https://github.com/conda-forge/refinenet-feedstock/blob/master/recipe/meta.yaml).
 
 ### Pip
 
 Before installing via `pip`, you must have the following system dependencies installed:
 
+- NVIDIA drivers
 - CUDA
-- TODO the rest of this list
 
 Then RefineNet, and all its Python dependencies can be installed via:
 
