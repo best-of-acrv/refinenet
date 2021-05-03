@@ -16,7 +16,7 @@ RefineNet is a generic multi-path refinement network for high-resolution semanti
 <img alt="RefineNet sample image on PASCAL VOC dataset" src="https://github.com/best-of-acrv/refinenet/raw/develop/docs/refinenet_sample.png" />
 </p>
 
-This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for training, evaluation, and deployment within systems. The package is easily installable with `conda`, and can also be installed via `pip` if you'd prefer to manually handle dependencies.
+This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for using training, evaluation, and prediction in your own systems. The package is easily installable with `conda`, and can also be installed via `pip` if you'd prefer to manually handle dependencies.
 
 Our code is free to use, and licensed under BSD-3. We simply ask that you [cite our work](#citing-our-work) if you use RefineNet in your own research.
 
@@ -80,21 +80,37 @@ u@pc:~$ pip install -e .
 
 _Note: the editable mode flag (`-e`) is optional, but allows you to immediately use any changes you make to the code in your local Python ecosystem._
 
+We also include scripts in the `./scripts` directory to support running RefineNet without any `pip` installation, but this workflow means you need to handle all system and Python dependencies manually.
+
 ## Using RefineNet
 
-Once installed, RefineNet can be used directly from the command line using Python
+RefineNet can be used either entirely from the command line, or through its Python API.
 
-TODO: add details for quickstart scripts that run directly from the command line
+### RefineNet from the command line
 
-Once installed, RefineNet can be used like any other Python package. It consists of a `RefineNet` class with three main functions for training, evaluation, and deployment. Below are some examples to help get you started with RefineNet:
+When installed, either via `pip` or `conda`, a `refinenet` executable is made available on your system `PATH` (the scripts in the `./scripts` directory can be used as an alternative if not installing via a package manager).
 
-## RefineNet API
+The `refinenet` executable provides access to all functionality, including training, evaluation, and prediction. See the `--help` flags for details on what the command line utility can do, and how it can be configured:
 
-The package also includes a full Python API that allows you to use RefineNet directly in your own projects.
+```
+u@pc:~$ refinenet --help
+```
 
-TODO: documentation link?
+```
+u@pc:~$ refinenet train --help
+```
 
-The snippet below shows a number of examples of how to use RefineNet with your own projects:
+```
+u@pc:~$ refinenet evaluate --help
+```
+
+```
+u@pc:~$ refinenet predict --help
+```
+
+### RefineNet Python API
+
+RefineNet can also be used like any other Python package through its API. The API consists of a `RefineNet` class with three main functions for training, evaluation, and prediction. Below are some examples to help get you started with RefineNet:
 
 ```python
 from refinenet import RefineNet
