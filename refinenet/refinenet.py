@@ -45,7 +45,7 @@ class RefineNet(object):
                  gpu_id=0,
                  model_type='full',
                  model_seed=0,
-                 num_classes=21,
+                 num_classes=40,
                  num_resnet_layers=50,
                  load_pretrained='imagenet',
                  load_snapshot=None,
