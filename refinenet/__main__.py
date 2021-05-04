@@ -97,6 +97,7 @@ def main():
                         help="Directory to save evaluation results")
     p_eval.add_argument('--output-images',
                         default=False,
+                        action='store_true',
                         help="Save prediction images as part of the results")
 
     p_pred = sp.add_parser('predict',
