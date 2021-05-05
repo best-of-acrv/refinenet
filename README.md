@@ -55,6 +55,12 @@ Once you have access to the `conda-forge` channel, RefineNet is installed by run
 u@pc:~$ conda install refinenet
 ```
 
+We don't explicitly lock the PyTorch installation to a CUDA-enabled version to maximise compatibility with our users' possible setups. If you wish to ensure a CUDA-enabled PyTorch is installed, please use the following installation line instead:
+
+```
+u@pc:~$ conda install pytorch=*=*cuda* refinenet
+```
+
 You can see a list of our Conda dependencies in the [RefineNet feedstock's recipe](https://github.com/conda-forge/refinenet-feedstock/blob/master/recipe/meta.yaml).
 
 ### Pip
