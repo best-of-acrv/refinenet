@@ -1,8 +1,4 @@
-from setuptools import Extension, find_packages, setup
-from setuptools.command.install import install
-import subprocess
-
-import time
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
