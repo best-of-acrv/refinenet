@@ -43,13 +43,13 @@ class RefineNet(object):
     def __init__(self,
                  *,
                  gpu_id=0,
-                 model_type='full',
-                 model_seed=0,
-                 num_classes=21,
-                 num_resnet_layers=50,
                  load_pretrained='imagenet',
                  load_snapshot=None,
-                 load_snapshot_optimiser=True):
+                 load_snapshot_optimiser=True,
+                 model_seed=0,
+                 model_type='full',
+                 num_classes=21,
+                 num_resnet_layers=50):
         # Apply sanitised arguments
         self.gpu_id = gpu_id
         self.model_type = _sanitise_arg(model_type, 'model_type',
@@ -91,7 +91,7 @@ class RefineNet(object):
                  *,
                  dataset_dir=None,
                  multi_scale=False,
-                 output_directory='.',
+                 output_directory='./eval_output',
                  output_images=False):
         # Perform argument validation
         dataset_name = _sanitise_arg(dataset_name, 'dataset_name',
@@ -123,7 +123,7 @@ class RefineNet(object):
                              "used in a call, not both.")
         elif image is not None and image_file is not None:
             raise ValueError("Either 'image' or 'image_file' must be provided")
-        if output_file:
+        if output_file is not None:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         # Construct the input image
