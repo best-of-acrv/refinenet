@@ -1,6 +1,7 @@
-import torch
-import os, sys
+import os
+import sys
 from six.moves import urllib
+import torch
 
 from ..helpers import cache_location
 
@@ -14,7 +15,7 @@ def download_model(model_name, model_url, model_dir=None, map_location=None):
         model_dir = os.getenv('TORCH_MODEL_ZOO')
         if model_dir is None and os.getenv('TORCH_HOME') is not None:
             model_dir = os.path.join(
-                os.path.expanduser(os.getenv('TORCH_HOME')), 'models')
+                os.path.expanduser(str(os.getenv('TORCH_HOME'))), 'models')
         if model_dir is None:
             model_dir = os.path.join(cache_location(), 'pretrained')
             print("Falling back to package cache for locating cached "

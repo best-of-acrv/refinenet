@@ -1,16 +1,13 @@
-from setuptools import Extension, find_packages, setup
-from setuptools.command.install import install
-import subprocess
-
-import time
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='refinenet',
-      version='0.9.4',
+      version='0.9.5',
       author='Ben Talbot',
       author_email='b.talbot@qut.edu.au',
+      url='https://github.com/best-of-acrv/refinenet',
       description='RefineNet semantic image segmentation',
       long_description=long_description,
       long_description_content_type='text/markdown',
