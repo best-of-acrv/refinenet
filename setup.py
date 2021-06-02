@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='refinenet',
-      version='0.9.4',
+      version='0.9.5',
       author='Ben Talbot',
       author_email='b.talbot@qut.edu.au',
       url='https://github.com/best-of-acrv/refinenet',
