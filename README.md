@@ -16,7 +16,7 @@ RefineNet is a generic multi-path refinement network for high-resolution semanti
 <img alt="RefineNet sample image on PASCAL VOC dataset" src="https://github.com/best-of-acrv/refinenet/raw/develop/docs/refinenet_sample.png" />
 </p>
 
-This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for using training, evaluation, and prediction in your own systems. The package is easily installable with `conda`, and can also be installed via `pip` if you'd prefer to manually handle dependencies.
+This repository contains an open-source implementation of RefineNet in Python, with both the official and lightweight network models from our publications. The package provides PyTorch implementations for using training, evaluation, and prediction in your own systems. The package is easily installable with `conda`, and can also be installed via `pip` if you prefer manually managing system dependencies.
 
 Our code is free to use, and licensed under BSD-3. We simply ask that you [cite our work](#citing-our-work) if you use RefineNet in your own research.
 
