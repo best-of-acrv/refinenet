@@ -52,13 +52,13 @@ conda config --set channel_priority strict
 Once you have access to the `conda-forge` channel, RefineNet is installed by running the following from inside a [Conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
 
 ```
-u@pc:~$ conda install refinenet
+conda install refinenet
 ```
 
 We don't explicitly lock the PyTorch installation to a CUDA-enabled version to maximise compatibility with our users' possible setups. If you wish to ensure a CUDA-enabled PyTorch is installed, please use the following installation line instead:
 
 ```
-u@pc:~$ conda install pytorch=*=*cuda* refinenet
+conda install pytorch=*=*cuda* refinenet
 ```
 
 You can see a list of our Conda dependencies in the [RefineNet feedstock's recipe](https://github.com/conda-forge/refinenet-feedstock/blob/master/recipe/meta.yaml).
@@ -73,7 +73,7 @@ Before installing via `pip`, you must have the following system dependencies ins
 Then RefineNet, and all its Python dependencies can be installed via:
 
 ```
-u@pc:~$ pip install refinenet
+pip install refinenet
 ```
 
 ### From source
@@ -81,7 +81,7 @@ u@pc:~$ pip install refinenet
 Installing from source is very similar to the `pip` method above due to RefineNet only containing Python code. Simply clone the repository, enter the directory, and install via `pip`:
 
 ```
-u@pc:~$ pip install -e .
+pip install -e .
 ```
 
 _Note: the editable mode flag (`-e`) is optional, but allows you to immediately use any changes you make to the code in your local Python ecosystem._
@@ -99,19 +99,19 @@ When installed, either via `pip` or `conda`, a `refinenet` executable is made av
 The `refinenet` executable provides access to all functionality, including training, evaluation, and prediction. See the `--help` flags for details on what the command line utility can do, and how it can be configured:
 
 ```
-u@pc:~$ refinenet --help
+refinenet --help
 ```
 
 ```
-u@pc:~$ refinenet train --help
+refinenet train --help
 ```
 
 ```
-u@pc:~$ refinenet evaluate --help
+refinenet evaluate --help
 ```
 
 ```
-u@pc:~$ refinenet predict --help
+refinenet predict --help
 ```
 
 ### RefineNet Python API
