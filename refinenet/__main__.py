@@ -177,7 +177,6 @@ def main():
         return
 
     # Run requested RefineNet operations
-    print(args)
     r = RefineNet(gpu_id=args.gpu_id,
                   model_type=args.model_type,
                   model_seed=args.model_seed,
