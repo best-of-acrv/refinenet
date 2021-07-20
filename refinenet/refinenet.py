@@ -43,7 +43,7 @@ class RefineNet(object):
     def __init__(self,
                  *,
                  gpu_id=0,
-                 load_pretrained='imagenet',
+                 load_pretrained='voc',
                  load_snapshot=None,
                  load_snapshot_optimiser=True,
                  model_seed=0,
