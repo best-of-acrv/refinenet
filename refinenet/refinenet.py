@@ -5,6 +5,7 @@ import PIL.Image as Image
 import re
 import torch
 from torchvision import transforms
+import warnings
 
 from .datasets.coco import COCO
 from .datasets.nyu import NYU
@@ -70,7 +71,7 @@ class RefineNet(object):
         os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu_id)
         torch.manual_seed(self.model_seed)
         if not torch.cuda.is_available():
-            raise RuntimeWarning("PyTorch could not find CUDA, using CPU ...")
+            warnings.warn("PyTorch could not find CUDA, using CPU ...")
 
         # Load the model based on the specified parameters
         self.model = None
