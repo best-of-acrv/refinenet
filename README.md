@@ -86,15 +86,13 @@ pip install -e .
 
 _Note: the editable mode flag (`-e`) is optional, but allows you to immediately use any changes you make to the code in your local Python ecosystem._
 
-We also include scripts in the `./scripts` directory to support running RefineNet without any `pip` installation, but this workflow means you need to handle all system and Python dependencies manually.
-
 ## Using RefineNet
 
 RefineNet can be used either entirely from the command line, or through its Python API. Both call the same underlying implementation, and as such offer equivalent functionality. We provide both options to facilitate use across a wide range of applications. See below for details of each method.
 
 ### RefineNet from the command line
 
-When installed, either via `pip` or `conda`, a `refinenet` executable is made available on your system `PATH` (the scripts in the `./scripts` directory can be used as an alternative if not installing via a package manager).
+When installed, either via `pip` or `conda`, a `refinenet` executable is made available on your system `PATH`.
 
 The `refinenet` executable provides access to all functionality, including training, evaluation, and prediction. See the `--help` flags for details on what the command line utility can do, and how it can be configured:
 
